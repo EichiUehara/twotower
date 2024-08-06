@@ -41,6 +41,8 @@ class UserDataset(Dataset):
         self.max_history_length = max_history_length
         self.tokenizer = tokenizer
         self.user_label_encoder = user_label_encoder
+        self.user_id_to_index = {user_id: i for i, user_id in enumerate(self.user_label_encoder.classes_)}
+        self.inverse_user_id_to_index = {index: id for id, index in self.user_id_to_index.items()}
         self.item_label_encoder = item_label_encoder
         self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
         self.numerical_features = ['average_rating']
@@ -60,7 +62,7 @@ class UserDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, encoded_id):
-        row = self.dataframe.loc[self.user_label_encoder.inverse_transform([encoded_id])[0]]
+        row = self.dataframe.loc[self.inverse_user_id_to_index[encoded_id]]
         purchased_item_ids_raws = [item_id for item_id, is_purchased in zip(row['reviewed_item_history'], row['is_purchased_history']) if is_purchased]
         purchased_item_ids = np.array([self.item_id_to_index[id] for id in purchased_item_ids_raws])
         average_rating = np.mean(row['rating_history'])

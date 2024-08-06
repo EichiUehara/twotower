@@ -50,7 +50,7 @@ class ItemDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, encoded_id):
-        row = self.dataframe.loc[self.inverse_item_id_to_index[encoded_id]]
+        row = self.dataframe.loc[self.inverse_item_id_to_index[encoded_id.item()]]
         main_category = self.main_category_id_to_index[row['main_category']]
         store = self.store_id_to_index[row['store']]
         return {

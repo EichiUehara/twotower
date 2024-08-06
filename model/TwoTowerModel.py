@@ -51,12 +51,20 @@ class TwoTowerBinaryModel(nn.Module):
         print(f"Training on {self.device}")
         self.to(self.device)
         self.train()
+        start = time.time()
+        i = 0
         for batch in data_loader:
             user_features = batch['user_id']
             item_features = batch['item_id']
             labels = batch['rating'].to(self.device)
             loss = self.train_step(optimizer, user_features, item_features, labels)
             print(f"Loss: {loss}")
+            i += 1
+            if i % 100 == 0:
+                print(f"Loss: {loss}")
+                print(f"Time: {time.time() - start}")
+                start = time.time()
+                print(f"Batches: {i}")
 
     def train_step(self, optimizer, user_features, item_features, labels):
         interaction_prob = self.forward(user_features, item_features)

@@ -15,18 +15,18 @@ from module.EmbedTextHistory import EmbedTextHistory
 class FeatureEmbeddingLayer(nn.Module):
     def __init__(self, embedding_dim, dataset):
         super(FeatureEmbeddingLayer, self).__init__()
-        self.id_embedding = nn.Embedding(len(dataset), 200)
-        self.embed_categorical = EmbedCategory(1000000, 20)
+        self.id_embedding = nn.Embedding(len(dataset), 100)
+        self.embed_categorical = EmbedCategory(112590, 10)
         self.embed_history = EmbedHistory(
-            nn.Embedding(1000000, 50),
-            nn.TransformerEncoderLayer(d_model=50, nhead=2))
+            nn.Embedding(122590, 20),
+            nn.TransformerEncoderLayer(d_model=20, nhead=2))
         self.embed_numerical = NormNumeric(len(dataset.numerical_features))
         self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
         self.embed_text_history = EmbedTextHistory(
             "BAAI/bge-base-en-v1.5"
         )
         self.dataset = dataset
-        self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
+        self.output = FeedForwardNetwork(dataset.input_dim, 32, embedding_dim)
         # self.output = nn.Linear(dataset.input_dim, embedding_dim)
 
     def forward(self, ids)->torch.Tensor:

@@ -34,11 +34,11 @@ class ItemDataset(Dataset):
         self.text_features = []
         self.history_features = []
         self.text_history_features = []
-        self.input_dim = 200 + \
+        self.input_dim = 100 + \
                          len(self.numerical_features) + \
-                         len(self.categorical_features) * 20 + \
+                         len(self.categorical_features) * 10 + \
                          len(self.text_features)* 768 + \
-                         len(self.history_features)* 50 + \
+                         len(self.history_features)* 20 + \
                          len(self.text_history_features)* 768
 
     def __len__(self):
@@ -46,17 +46,15 @@ class ItemDataset(Dataset):
 
     def __getitem__(self, encoded_id):
         row = self.dataframe.loc[self.item_label_encoder.inverse_transform([encoded_id])[0]]
-        parent_asin = self.item_label_encoder.transform([row.name])[0]
         main_category = self.main_category_label_encoder.transform([row['main_category']])[0]
         store = self.store_label_encoder.transform([row['store']])[0]
-        details = row['details']
         return {
-            'id': parent_asin, # item_id: str
+            'id': encoded_id, # item_id: str
             'main_category': main_category, # category: str
             'average_rating': row['average_rating'], # rating: float
             'rating_number': row['rating_number'], # rating_number: int
             'store': store, # store: str
-            'details': details # details: text
+            'details': row['details'] # details: text
         }
     def get_item_by_encoded_id(self, encoded_id):
         return self.dataframe.loc[self.item_label_encoder.inverse_transform([encoded_id])[0]]
@@ -107,7 +105,4 @@ if __name__ == '__main__':
     tokenizer = Tokenizer()
     item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
     item_dataset.item_label_encoder.fit(item_dataset.dataframe.index)
-    print(iter(item_dataset).next())
-    print(item_dataset.get_item_by_encoded_id(item_dataset[0]['id']))
-    batch = [dataset for dataset in range(10)]
-    print(item_dataset.collate_fn(batch))
+    print(len(item_dataset))

@@ -46,27 +46,24 @@ class UserDataset(Dataset):
         self.history_features = ['purchased_item_ids']
         # self.text_history_features = ['review_text_history']
         self.text_history_features = []
-        self.input_dim = 200 + \
+        self.input_dim = 100 + \
                          len(self.numerical_features) + \
-                         len(self.categorical_features) * 20 + \
+                         len(self.categorical_features) * 10 + \
                          len(self.text_features)* 768 + \
-                         len(self.history_features)* 50 + \
+                         len(self.history_features)* 20 + \
                          len(self.text_history_features)* 768
 
     def __len__(self):
         return len(self.dataframe)
 
     def __getitem__(self, encoded_id):
-        self.dataframe.loc['AED2GFGIAJ22PHMZGSKH2CPUF75Q']
         row = self.dataframe.loc[self.user_label_encoder.inverse_transform([encoded_id])[0]]
-        user_id = self.user_label_encoder.transform([row.name])[0]
         purchased_item_ids = [self.item_label_encoder.transform([item_id])[0] for item_id, is_purchased in zip(row['reviewed_item_history'], row['is_purchased_history']) if is_purchased]
         average_rating = np.mean(row['rating_history'])
-        review_text_history = row['review_text_history']
         return {
-            'id': user_id, # user_id: integer
+            'id': encoded_id, # user_id: integer
             'purchased_item_ids': purchased_item_ids, # history of purchased_item_ids: list[str]
-            'review_text_history': review_text_history, # history of review_text: | separated string
+            'review_text_history': row['review_text_history'], # history of review_text: | separated string
             'average_rating': average_rating, # average_rating: float
         }
     def collate_fn(self, batch):
@@ -121,9 +118,10 @@ if __name__ == '__main__':
     user_dataset.user_label_encoder.fit(user_dataset.dataframe.index)
     item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
     item_dataset.item_label_encoder.fit(item_dataset.dataframe.index)
-    batch = [user_dataset[id] for id in [44636, 489025, 584726, 60237, 513537, 313297, 453297, 230375, 519357, 558609, 321068, 267866, 413788, 315984, 432122, 248620, 349842, 337030, 204676, 626178, 117422, 191508, 622734, 394569, 323315, 50361, 94118, 378209, 205582, 623248, 86303, 67980]]
-    # batch = next(iter(user_dataset))
-    # print(batch)
-    # print(user_dataset.collate_fn([batch, batch]))
+    # batch = [user_dataset[id] for id in range(10)]
+    print(len(user_dataset))
+    batch = next(iter(user_dataset))
+    print(batch)
+    print(user_dataset.collate_fn([batch, batch]))
     # print(user_dataset.collate_fn([batch, batch])['numerical_features'].shape)
     # print(user_dataset.collate_fn([batch, batch])['numerical_features'])

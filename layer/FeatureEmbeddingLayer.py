@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from torch import nn
 import torch
 
+from layer.FeedForwardNetwork import FeedForwardNetwork
 from module.EmbedCategory import EmbedCategory
 from module.EmbedHistory import EmbedHistory
 from module.NormNumeric import NormNumeric
@@ -25,14 +26,15 @@ class FeatureEmbeddingLayer(nn.Module):
             "BAAI/bge-base-en-v1.5"
         )
         self.dataset = dataset
-        self.output = nn.Linear(dataset.input_dim, embedding_dim)
+        self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
+        # self.output = nn.Linear(dataset.input_dim, embedding_dim)
 
     def forward(self, ids)->torch.Tensor:
         device = next(self.parameters()).device
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
         embedded_features = []
-        embedded_features.append(self.id_embedding(torch.tensor(ids).to(device)))
+        embedded_features.append(self.id_embedding(ids.to(device)))
         if len(batch['numerical_features']) > 0:
             batch['numerical_features'].to(device)
             embedded_features.append(

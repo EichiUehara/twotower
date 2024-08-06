@@ -25,7 +25,7 @@ if __name__ == '__main__':
             item_label_encoder, 
             user_label_encoder,
             review_dataset, user_dataset, item_dataset)
-    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 32, 0.8, num_workers=8)
+    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 128, 0.8, num_workers=8)
     
     # start_time = time.time()
     # for batch in train_dataloader:
@@ -35,7 +35,6 @@ if __name__ == '__main__':
     #     user_batch = user_dataset.collate_fn(user_batch)
     #     item_batch = [item_dataset[id] for id in item_ids]
     #     item_batch = item_dataset.collate_fn(item_batch)
-    #     print(f"Data loading time: {time.time() - start_time} seconds")
     #     start_time = time.time()
     #     # Training code here
     #     pass

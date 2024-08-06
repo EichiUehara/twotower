@@ -26,8 +26,10 @@ class ItemDataset(Dataset):
         self.item_label_encoder = item_label_encoder
         self.main_category_label_encoder = LabelEncoder()
         self.main_category_label_encoder.fit(self.dataframe['main_category'])
+        self.main_category_id_to_index = {main_category_id: i for i, main_category_id in enumerate(self.main_category_label_encoder.classes_)}
         self.store_label_encoder = LabelEncoder()
         self.store_label_encoder.fit(self.dataframe['store'])
+        self.store_id_to_index = {store_id: i for i, store_id in enumerate(self.store_label_encoder.classes_)}
         self.tokenizer = tokenizer
         self.numerical_features = ['average_rating', 'rating_number']
         self.categorical_features = ['main_category', 'store']
@@ -47,8 +49,8 @@ class ItemDataset(Dataset):
 
     def __getitem__(self, encoded_id):
         row = self.dataframe.loc[self.item_label_encoder.inverse_transform([encoded_id])[0]]
-        main_category = self.main_category_label_encoder.transform([row['main_category']])[0]
-        store = self.store_label_encoder.transform([row['store']])[0]
+        main_category = self.main_category_id_to_index[row['main_category']]
+        store = self.store_id_to_index[row['store']]
         return {
             'id': encoded_id, # item_id: str
             'main_category': main_category, # category: str

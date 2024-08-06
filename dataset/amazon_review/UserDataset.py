@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 
 import os
 import sys
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from module.Tokenizer import Tokenizer
@@ -41,6 +42,7 @@ class UserDataset(Dataset):
         self.tokenizer = tokenizer
         self.user_label_encoder = user_label_encoder
         self.item_label_encoder = item_label_encoder
+        self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
         self.numerical_features = ['average_rating']
         self.categorical_features = []
         self.text_features = []
@@ -59,7 +61,8 @@ class UserDataset(Dataset):
 
     def __getitem__(self, encoded_id):
         row = self.dataframe.loc[self.user_label_encoder.inverse_transform([encoded_id])[0]]
-        purchased_item_ids = [self.item_label_encoder.transform([item_id])[0] for item_id, is_purchased in zip(row['reviewed_item_history'], row['is_purchased_history']) if is_purchased]
+        purchased_item_ids_raws = [item_id for item_id, is_purchased in zip(row['reviewed_item_history'], row['is_purchased_history']) if is_purchased]
+        purchased_item_ids = np.array([self.item_id_to_index[id] for id in purchased_item_ids_raws])
         average_rating = np.mean(row['rating_history'])
         return {
             'id': encoded_id, # user_id: integer
@@ -68,6 +71,7 @@ class UserDataset(Dataset):
             'average_rating': average_rating, # average_rating: float
         }
     def collate_fn(self, batch):
+        start = time.time()
         # Process numerical features
         numerical_features_tensor = torch.stack([torch.tensor([item[k] for item in batch], dtype=torch.float32) for k in self.numerical_features])
         

@@ -21,39 +21,39 @@ class FeatureEmbeddingLayer(nn.Module):
             nn.Embedding(122590, 20),
             nn.TransformerEncoderLayer(d_model=20, nhead=2))
         self.embed_numerical = NormNumeric(len(dataset.numerical_features))
-        self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
-        self.embed_text_history = EmbedTextHistory(
-            "BAAI/bge-base-en-v1.5"
-        )
+        # self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
+        # self.embed_text_history = EmbedTextHistory(
+        #     "BAAI/bge-base-en-v1.5"
+        # )
         self.dataset = dataset
         self.output = FeedForwardNetwork(dataset.input_dim, 32, embedding_dim)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.output = nn.Linear(dataset.input_dim, embedding_dim)
 
     def forward(self, ids)->torch.Tensor:
-        device = next(self.parameters()).device
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
         embedded_features = []
-        embedded_features.append(self.id_embedding(ids.to(device)))
+        embedded_features.append(self.id_embedding(ids.to(self.device)))
         if len(batch['numerical_features']) > 0:
             embedded_features.append(
-                self.embed_numerical(batch['numerical_features'].to(device)))
+                self.embed_numerical(batch['numerical_features'].to(self.device)))
         if len(batch['categorical_features']) > 0:
             for feature in batch['categorical_features']:
                 embedded_features.append(
-                    self.embed_categorical(batch['categorical_features'][feature].to(device)))
+                    self.embed_categorical(batch['categorical_features'][feature].to(self.device)))
         if len(batch['history_features']) > 0:
             for feature in batch['history_features']:
                 embedded_features.append(
-                    self.embed_history(batch['history_features'][feature].to(device)))
-        if len(batch['text_features']) > 0:
-            for feature in batch['text_features']:
-                embedded_features.append(
-                    self.embed_text(batch['text_features'][feature].to(device)))
-        if len(batch['text_history_features']) > 0:
-            for feature in batch['text_history_features']:
-                embedded_features.append(
-                    self.embed_text_history(batch['text_history_features'][feature].to(device)))
+                    self.embed_history(batch['history_features'][feature].to(self.device)))
+        # if len(batch['text_features']) > 0:
+        #     for feature in batch['text_features']:
+        #         embedded_features.append(
+        #             self.embed_text(batch['text_features'][feature].to(self.device)))
+        # if len(batch['text_history_features']) > 0:
+        #     for feature in batch['text_history_features']:
+        #         embedded_features.append(
+        #             self.embed_text_history(batch['text_history_features'][feature].to(self.device)))
         concatenated = torch.cat(embedded_features, dim=1)
         return self.output(concatenated)
     

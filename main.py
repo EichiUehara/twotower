@@ -1,4 +1,5 @@
 from sklearn.preprocessing import LabelEncoder
+import torch
 
 from model.TwoTowerModel import TwoTowerBinaryModel
 
@@ -24,13 +25,5 @@ if __name__ == '__main__':
             item_label_encoder, 
             user_label_encoder,
             review_dataset, user_dataset, item_dataset)
-    user_ids = [review_dataset[i]['user_id'] for i in range(32)]
-    item_ids = [review_dataset[i]['item_id'] for i in range(32)]
-    start = time.time()
-    print(model(user_ids, item_ids))
-    print(time.time() - start)
-    # model.index_add(item_ids, item
-    # model.index_train()
-    # print(model.index_search(ids, 10))
-    # model.fit(torch.optim.Adam(model.parameters()), get_data_loaders(user_dataset, item_dataset, review_dataset, 32))
-    # print(model.inference(ids, 10))
+    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 32, 0.8)
+    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader)

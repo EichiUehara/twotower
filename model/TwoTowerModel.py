@@ -3,7 +3,7 @@ from torch.nn import functional as F
 import torch
 from torch import nn
 
-from dataloader.amazon_review.get_data_loaders import get_data_loaders
+from dataloader.get_data_loaders import get_data_loaders
 from layer.FeatureEmbeddingLayer import FeatureEmbeddingLayer
 from module.FaissIndex import FaissIndex
 
@@ -13,8 +13,6 @@ class TwoTowerBinaryModel(nn.Module):
                  item_label_encoder: LabelEncoder, user_label_encoder: LabelEncoder,
                  ReviewDataset, UserDataset, ItemDataset):
         super(TwoTowerBinaryModel, self).__init__()
-        # self.user_embedding = nn.Embedding(len(UserDataset), embedding_dim)
-        # self.item_embedding = nn.Embedding(len(ItemDataset), embedding_dim)
         self.user_features_embedding = FeatureEmbeddingLayer(embedding_dim, UserDataset)
         self.item_features_embedding = FeatureEmbeddingLayer(embedding_dim, ItemDataset)
         self.item_label_encoder = item_label_encoder
@@ -28,12 +26,6 @@ class TwoTowerBinaryModel(nn.Module):
         self.get_data_loaders = get_data_loaders
 
     def forward(self, user_ids, item_ids):
-        # user_embedding = self.user_embedding(torch.tensor(user_ids))
-        # item_embedding = self.item_embedding(torch.tensor(item_ids))
-        # user_feature_embedding = self.user_features_embedding(user_ids)
-        # item_feature_embedding = self.item_features_embedding(item_ids)
-        # user_emb = user_embedding + user_feature_embedding
-        # item_emb = item_embedding + item_feature_embedding        
         user_emb = self.user_features_embedding(user_ids)
         item_emb = self.item_features_embedding(item_ids)
         interaction_score = torch.sum(user_emb * item_emb, dim=1)
@@ -71,6 +63,7 @@ class TwoTowerBinaryModel(nn.Module):
 
     def train_step(self, optimizer, user_features, item_features, labels):
         interaction_prob = self.forward(user_features, item_features)
+        labels = labels.float()
         loss = F.binary_cross_entropy(interaction_prob, labels)
         optimizer.zero_grad()
         loss.backward()

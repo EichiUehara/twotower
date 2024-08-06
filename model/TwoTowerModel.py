@@ -27,15 +27,15 @@ class TwoTowerBinaryModel(nn.Module):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def forward(self, user_ids, item_ids):
-        user_emb = self.user_features_embedding(user_ids.to(self.device))
-        item_emb = self.item_features_embedding(item_ids.to(self.device))
+        user_emb = self.user_features_embedding(user_ids)
+        item_emb = self.item_features_embedding(item_ids)
         interaction_score = torch.sum(user_emb * item_emb, dim=1)
         interaction_prob = torch.sigmoid(interaction_score)
         return interaction_prob
 
     def index_train(self, item_ids):
         with torch.no_grad():
-            item_emb = self.item_features_embedding(item_ids.to(self.device))
+            item_emb = self.item_features_embedding(item_ids)
             self.FaissIndex.train(item_emb)
     
     def index_add(self, embedding, item_ids):
@@ -43,7 +43,7 @@ class TwoTowerBinaryModel(nn.Module):
     
     def index_search(self, user_ids, topk):
         with torch.no_grad():
-            user_emb = self.user_features_embedding(user_ids.to(self.device))
+            user_emb = self.user_features_embedding(user_ids)
             _ , indices = self.FaissIndex.search(user_emb, topk)
             return indices
     
@@ -52,8 +52,8 @@ class TwoTowerBinaryModel(nn.Module):
         self.to(self.device)
         self.train()
         for batch in data_loader:
-            user_features = batch['user_id'].to(self.device)
-            item_features = batch['item_id'].to(self.device)
+            user_features = batch['user_id']
+            item_features = batch['item_id']
             labels = batch['rating'].to(self.device)
             loss = self.train_step(optimizer, user_features, item_features, labels)
             print(f"Loss: {loss}")

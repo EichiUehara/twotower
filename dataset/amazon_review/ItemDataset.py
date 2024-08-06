@@ -78,7 +78,7 @@ class ItemDataset(Dataset):
         
         # Process history features
         history_features = {
-            k: torch.stack([process_history_feature(torch.tensor(item[k]), self.max_history_length) for item in batch]).squeeze(1)
+            k: torch.stack([process_history_feature(torch.tensor(item[k]), self.max_history_length) for item in batch])
             for k in self.history_features
         }
         

@@ -83,7 +83,7 @@ class UserDataset(Dataset):
         
         # Process history features
         history_features = {
-            k: torch.stack([process_history_feature(torch.tensor(item[k]), self.max_history_length) for item in batch]).squeeze(1)
+            k: torch.stack([process_history_feature(item[k], self.max_history_length) for item in batch])
             for k in self.history_features
         }
         
@@ -106,7 +106,6 @@ class UserDataset(Dataset):
             'history_features': history_features,
             'text_history_features': text_history_features
         }
-
         
 if __name__ == '__main__':
     from dataset.amazon_review.ItemDataset import ItemDataset

@@ -34,11 +34,8 @@ class TwoTowerBinaryModel(nn.Module):
 
     def index_train(self, item_ids):
         with torch.no_grad():
-            item_ids = self.item_label_encoder.transform(item_ids)
-            item_embedding = self.item_embedding(item_ids)
-            item_feature_embedding = self.item_features_embedding(item_ids)
-            item_embedding = item_embedding + item_feature_embedding
-            self.FaissIndex.train(item_embedding)
+            item_emb = self.item_features_embedding(item_ids)
+            self.FaissIndex.train(item_emb)
     
     def index_add(self, embedding, item_ids):
         self.FaissIndex.add(embedding, item_ids)

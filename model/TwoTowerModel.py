@@ -3,10 +3,14 @@ from sklearn.preprocessing import LabelEncoder
 from torch.nn import functional as F
 import torch
 from torch import nn
+from torch.cuda.amp import GradScaler, autocast
+scaler = GradScaler()
 
 from dataloader.get_data_loaders import get_data_loaders
 from layer.FeatureEmbeddingLayer import FeatureEmbeddingLayer
 from module.FaissIndex import FaissIndex
+
+
 
 class TwoTowerBinaryModel(nn.Module):
     def __init__(self, 
@@ -57,7 +61,7 @@ class TwoTowerBinaryModel(nn.Module):
         for batch in data_loader:
             user_features = batch['user_id']
             item_features = batch['item_id']
-            labels = batch['rating'].to(self.device)
+            labels = batch['rating']
             loss = self.train_step(optimizer, user_features, item_features, labels)
             i += 1
             if i % 10 == 0:
@@ -67,12 +71,17 @@ class TwoTowerBinaryModel(nn.Module):
                 print(f"Batches: {i}")
 
     def train_step(self, optimizer, user_features, item_features, labels):
-        interaction_prob = self.forward(user_features, item_features)
-        labels = labels.float()
-        loss = F.binary_cross_entropy(interaction_prob, labels)
+        labels = labels.float().to(self.device)
         optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        with autocast():
+            interaction_prob = self.forward(user_features, item_features)
+            loss = F.binary_cross_entropy(interaction_prob, labels)
+        
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        # loss.backward()
+        # optimizer.step()
         return loss.item()
 
     def inference(self, user_features, topk):

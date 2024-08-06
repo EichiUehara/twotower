@@ -25,7 +25,7 @@ if __name__ == '__main__':
             item_label_encoder, 
             user_label_encoder,
             review_dataset, user_dataset, item_dataset)
-    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 64, 0.8)
+    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 256, 0.8)
     # # load the model
     model.load_state_dict(torch.load('model.pth'))
     model.eval()

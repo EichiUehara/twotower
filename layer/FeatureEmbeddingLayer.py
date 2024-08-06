@@ -36,29 +36,24 @@ class FeatureEmbeddingLayer(nn.Module):
         embedded_features = []
         embedded_features.append(self.id_embedding(ids.to(device)))
         if len(batch['numerical_features']) > 0:
-            batch['numerical_features'].to(device)
             embedded_features.append(
-                self.embed_numerical(batch['numerical_features']))
+                self.embed_numerical(batch['numerical_features'].to(device)))
         if len(batch['categorical_features']) > 0:
             for feature in batch['categorical_features']:
-                batch['categorical_features'][feature].to(device)
                 embedded_features.append(
-                    self.embed_categorical(batch['categorical_features'][feature]))
+                    self.embed_categorical(batch['categorical_features'][feature].to(device)))
         if len(batch['history_features']) > 0:
             for feature in batch['history_features']:
-                batch['history_features'][feature].to(device)
                 embedded_features.append(
-                    self.embed_history(batch['history_features'][feature]))
+                    self.embed_history(batch['history_features'][feature].to(device)))
         if len(batch['text_features']) > 0:
             for feature in batch['text_features']:
-                batch['text_features'][feature].to(device)
                 embedded_features.append(
-                    self.embed_text(batch['text_features'][feature]))
+                    self.embed_text(batch['text_features'][feature].to(device)))
         if len(batch['text_history_features']) > 0:
             for feature in batch['text_history_features']:
-                batch['text_history_features'][feature].to(device)
                 embedded_features.append(
-                    self.embed_text_history(batch['text_history_features'][feature]))
+                    self.embed_text_history(batch['text_history_features'][feature].to(device)))
         concatenated = torch.cat(embedded_features, dim=1)
         return self.output(concatenated)
     

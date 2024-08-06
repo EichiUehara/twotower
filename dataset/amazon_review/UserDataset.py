@@ -62,7 +62,8 @@ class UserDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, encoded_id):
-        row = self.dataframe.loc[self.inverse_user_id_to_index[encoded_id]]
+        # retrieve value from tensor
+        row = self.dataframe.loc[self.inverse_user_id_to_index[encoded_id.item()]]
         purchased_item_ids_raws = [item_id for item_id, is_purchased in zip(row['reviewed_item_history'], row['is_purchased_history']) if is_purchased]
         purchased_item_ids = np.array([self.item_id_to_index[id] for id in purchased_item_ids_raws])
         average_rating = np.mean(row['rating_history'])

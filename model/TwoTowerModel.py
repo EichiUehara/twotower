@@ -58,9 +58,8 @@ class TwoTowerBinaryModel(nn.Module):
             item_features = batch['item_id']
             labels = batch['rating'].to(self.device)
             loss = self.train_step(optimizer, user_features, item_features, labels)
-            print(f"Loss: {loss}")
             i += 1
-            if i % 100 == 0:
+            if i % 10 == 0:
                 print(f"Loss: {loss}")
                 print(f"Time: {time.time() - start}")
                 start = time.time()

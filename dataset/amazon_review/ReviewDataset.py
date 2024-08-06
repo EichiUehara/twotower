@@ -6,7 +6,8 @@ class ReviewDataset(Dataset):
     def __init__(self, amazon_category, 
                  item_label_encoder: LabelEncoder, user_label_encoder: LabelEncoder):
         reviews = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True)
-        review_df = reviews.to_pandas()
+        review_df = reviews.to_pandas().copy()
+        del reviews
         review_df = review_df[['timestamp', 'user_id', 'parent_asin', 'rating']]
         review_df = review_df.sort_values(by=['timestamp'], ascending=[True])
         review_df = review_df.drop_duplicates(subset=['user_id', 'parent_asin'], keep='first')

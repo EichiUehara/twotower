@@ -19,7 +19,8 @@ class UserDataset(Dataset):
                  item_label_encoder: LabelEncoder, user_label_encoder: LabelEncoder,
                  max_history_length=10):
         reviews = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True)
-        review_df = reviews.to_pandas()
+        review_df = reviews.to_pandas().copy()
+        del reviews
         review_df = review_df[['timestamp', 'user_id', 'verified_purchase', 'rating', 'parent_asin', 'text']]
         review_df = review_df.sort_values(by=['user_id', 'timestamp'], ascending=[True, False])
         user_df = review_df.groupby('user_id').agg({

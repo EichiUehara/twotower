@@ -14,7 +14,8 @@ class ItemDataset(Dataset):
                  item_label_encoder: LabelEncoder,
                  max_history_length=10):
         item_metadata = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True)
-        item_df = item_metadata.to_pandas()
+        item_df = item_metadata.to_pandas().copy()
+        del item_metadata
         item_df = item_df[['parent_asin', 'main_category', 'average_rating', 'rating_number', 'store', 'details']]
         item_df = item_df.drop_duplicates(subset='parent_asin')
         item_df = item_df.reset_index(drop=True)

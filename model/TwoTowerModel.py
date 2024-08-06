@@ -35,8 +35,9 @@ class TwoTowerBinaryModel(nn.Module):
         user_emb = self.user_features_embedding(user_ids)
         item_emb = self.item_features_embedding(item_ids)
         interaction_score = torch.sum(user_emb * item_emb, dim=1)
-        interaction_prob = torch.sigmoid(interaction_score)
-        return interaction_prob
+        return interaction_score
+        # interaction_prob = torch.sigmoid(interaction_score)
+        # return interaction_prob
 
     def index_train(self, item_ids):
         with torch.no_grad():
@@ -74,8 +75,10 @@ class TwoTowerBinaryModel(nn.Module):
         labels = labels.float().to(self.device)
         optimizer.zero_grad()
         with autocast():
-            interaction_prob = self.forward(user_features, item_features)
-            loss = F.binary_cross_entropy(interaction_prob, labels)
+            # interaction_prob = self.forward(user_features, item_features)
+            # loss = F.binary_cross_entropy(interaction_prob, labels)
+            logits = self.forward(user_features, item_features)
+            loss = F.binary_cross_entropy_with_logits(logits, labels)
         
         scaler.scale(loss).backward()
         scaler.step(optimizer)

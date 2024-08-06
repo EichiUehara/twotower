@@ -1,11 +1,11 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-def get_data_loaders(dataset: Dataset, batch_size, train_size, collate_fn=None) -> tuple[DataLoader, DataLoader]:
+def get_data_loaders(dataset: Dataset, batch_size, train_size, num_workers=4, collate_fn=None) -> tuple[DataLoader, DataLoader]:
     train_size = int(train_size * len(dataset))
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
-    return DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True, collate_fn=collate_fn), \
-            DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True, collate_fn=collate_fn)
+    return DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=True, collate_fn=collate_fn), \
+            DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=True, collate_fn=collate_fn)
 
 if __name__ == '__main__':
     from sklearn.preprocessing import LabelEncoder

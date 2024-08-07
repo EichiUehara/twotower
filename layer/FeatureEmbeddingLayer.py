@@ -65,7 +65,7 @@ if __name__ == '__main__':
     import time
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
+    tokenizer = Tokenizer()
     user_dataset = UserDataset(
         'All_Beauty', tokenizer,
         item_label_encoder=item_label_encoder, user_label_encoder=user_label_encoder,

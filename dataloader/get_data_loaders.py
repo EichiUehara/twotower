@@ -17,7 +17,7 @@ if __name__ == '__main__':
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
+    tokenizer = Tokenizer()
     item_dataset = ItemDataset('All_Beauty',tokenizer, item_label_encoder=item_label_encoder)
     item_label_encoder.fit(item_dataset.dataframe.index)
     user_dataset = UserDataset(

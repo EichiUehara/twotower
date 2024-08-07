@@ -35,7 +35,7 @@ class UserDataset(Dataset):
                          len(self.text_features)* 768 + \
                          len(self.history_features)* 50 + \
                          len(self.text_history_features)* 768
-        self.tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
+        self.tokenizer = Tokenizer()
         self.max_history_length = 10
         self.dataframe = processed_user_df
         self.index_to_id = {i: id for i, id in enumerate(self.dataframe.index)}

@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer
 
 class Tokenizer:
-    def __init__(self, model_name='bert-base-uncased'):
+    def __init__(self, model_name="BAAI/bge-base-en-v1.5"):
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name, trust_remote_code=True)
     def tokenize(self, text, max_length=512, 
@@ -23,7 +23,7 @@ class Tokenizer:
         return self.tokenizer.decode(token_ids)
 
 if __name__ == '__main__':
-    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
+    tokenizer = Tokenizer()
     print(tokenizer.tokenize("Hello, my dog is cute")["input_ids"])
     encoded = tokenizer.encode("Hello, my dog is cute")
     print(encoded)

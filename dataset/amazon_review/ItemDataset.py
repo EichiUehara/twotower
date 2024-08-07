@@ -34,15 +34,15 @@ class ItemDataset(Dataset):
         self.tokenizer = tokenizer
         self.numerical_features = ['average_rating', 'rating_number']
         self.categorical_features = ['main_category', 'store']
-        # self.text_features = ['details']
-        self.text_features = []
+        self.text_features = ['details']
+        # self.text_features = []
         self.history_features = []
         self.text_history_features = []
-        self.input_dim = 100 + \
+        self.input_dim = 200 + \
                          len(self.numerical_features) + \
-                         len(self.categorical_features) * 10 + \
+                         len(self.categorical_features) * 50 + \
                          len(self.text_features)* 768 + \
-                         len(self.history_features)* 20 + \
+                         len(self.history_features)* 50 + \
                          len(self.text_history_features)* 768
 
     def __len__(self):

@@ -48,13 +48,13 @@ class UserDataset(Dataset):
         self.categorical_features = []
         self.text_features = []
         self.history_features = ['purchased_item_ids']
-        # self.text_history_features = ['review_text_history']
-        self.text_history_features = []
-        self.input_dim = 100 + \
+        self.text_history_features = ['review_text_history']
+        # self.text_history_features = []
+        self.input_dim = 200 + \
                          len(self.numerical_features) + \
-                         len(self.categorical_features) * 10 + \
+                         len(self.categorical_features) * 50 + \
                          len(self.text_features)* 768 + \
-                         len(self.history_features)* 20 + \
+                         len(self.history_features)* 50 + \
                          len(self.text_history_features)* 768
 
     def __len__(self):

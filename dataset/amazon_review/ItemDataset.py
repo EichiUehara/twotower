@@ -25,7 +25,6 @@ class ItemDataset(Dataset):
         self.max_history_length = max_history_length
         self.item_label_encoder = item_label_encoder
         self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
-        self.inverse_item_id_to_index = {index: id for id, index in self.item_id_to_index.items()}
         self.main_category_label_encoder = LabelEncoder()
         self.main_category_label_encoder.fit(self.dataframe['main_category'])
         self.main_category_id_to_index = {main_category_id: i for i, main_category_id in enumerate(self.main_category_label_encoder.classes_)}
@@ -49,8 +48,9 @@ class ItemDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    def __getitem__(self, encoded_id):
-        row = self.dataframe.loc[self.item_label_encoder.inverse_transform([encoded_id])[0]]
+    def __getitem__(self, id):
+        row = self.dataframe.loc[id]
+        encoded_id = self.item_id_to_index[id]
         main_category = self.main_category_id_to_index[row['main_category']]
         store = self.store_id_to_index[row['store']]
         return {

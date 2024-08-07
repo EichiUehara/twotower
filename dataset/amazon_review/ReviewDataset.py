@@ -22,8 +22,10 @@ class ReviewDataset(Dataset):
     def __getitem__(self, idx):
         row = self.dataframe.iloc[idx]
         return {
-            'user_id': self.user_label_encoder.transform([row['user_id']])[0], # user_id: str
-            'item_id': self.item_label_encoder.transform([row['parent_asin']])[0], # item_id: str
+            # 'user_id': self.user_label_encoder.transform([row['user_id']])[0], # user_id: str
+            # 'item_id': self.item_label_encoder.transform([row['parent_asin']])[0], # item_id: str
+            'user_id': row['user_id'], # user_id: str
+            'item_id': row['parent_asin'], # item_id: str
             'rating': row['rating'] # rating: bool
         }
         

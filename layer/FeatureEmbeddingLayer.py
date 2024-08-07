@@ -34,7 +34,7 @@ class FeatureEmbeddingLayer(nn.Module):
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
         embedded_features = []
-        embedded_features.append(self.id_embedding(ids.to(self.device)))
+        embedded_features.append(self.id_embedding(batch['id'].to(self.device)))
         if len(batch['numerical_features']) > 0:
             embedded_features.append(
                 self.embed_numerical(batch['numerical_features'].to(self.device)))

@@ -25,7 +25,7 @@ if __name__ == '__main__':
             item_label_encoder, 
             user_label_encoder,
             review_dataset, user_dataset, item_dataset)
-    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 2048, 0.8, num_workers=8)
+    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 512, 0.8, num_workers=8)
     
     # start_time = time.time()
     # for batch in train_dataloader:

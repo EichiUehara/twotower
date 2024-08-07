@@ -1,5 +1,6 @@
 import time
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
 from torch.nn import functional as F
 import torch
 from torch import nn
@@ -11,22 +12,11 @@ from layer.FeatureEmbeddingLayer import FeatureEmbeddingLayer
 from module.FaissIndex import FaissIndex
 
 
-
 class TwoTowerBinaryModel(nn.Module):
-    def __init__(self, 
-                 embedding_dim, num_faiss_clusters, 
-                 item_label_encoder: LabelEncoder, user_label_encoder: LabelEncoder,
-                 ReviewDataset, UserDataset, ItemDataset):
+    def __init__(self, embedding_dim, num_faiss_clusters, UserDataset, ItemDataset):
         super(TwoTowerBinaryModel, self).__init__()
         self.user_features_embedding = FeatureEmbeddingLayer(embedding_dim, UserDataset)
         self.item_features_embedding = FeatureEmbeddingLayer(embedding_dim, ItemDataset)
-        self.item_label_encoder = item_label_encoder
-        self.item_label_encoder.fit(ItemDataset.dataframe.index)
-        self.user_label_encoder = user_label_encoder
-        self.user_label_encoder.fit(UserDataset.dataframe.index)
-        self.review_dataset = ReviewDataset
-        self.user_dataset = UserDataset
-        self.item_dataset = ItemDataset
         self.FaissIndex = FaissIndex(embedding_dim, num_faiss_clusters)
         self.get_data_loaders = get_data_loaders
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -36,8 +26,6 @@ class TwoTowerBinaryModel(nn.Module):
         item_emb = self.item_features_embedding(item_ids)
         interaction_score = torch.sum(user_emb * item_emb, dim=1)
         return interaction_score
-        # interaction_prob = torch.sigmoid(interaction_score)
-        # return interaction_prob
 
     def index_train(self, item_ids):
         with torch.no_grad():
@@ -75,16 +63,15 @@ class TwoTowerBinaryModel(nn.Module):
         labels = labels.float().to(self.device)
         optimizer.zero_grad()
         with autocast():
-            # interaction_prob = self.forward(user_features, item_features)
-            # loss = F.binary_cross_entropy(interaction_prob, labels)
             logits = self.forward(user_features, item_features)
-            loss = F.binary_cross_entropy_with_logits(logits, labels)
-        
+            loss = F.binary_cross_entropy_with_logits(logits, labels)        
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
-        # loss.backward()
-        # optimizer.step()
+        probabilities = torch.sigmoid(logits)
+        predictions = probabilities > 0.5
+        accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
+        print(f"Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%")
         return loss.item()
 
     def inference(self, user_features, topk):
@@ -108,10 +95,7 @@ if __name__ == '__main__':
         item_label_encoder=item_label_encoder, user_label_encoder=user_label_encoder,
         max_history_length=10)
     item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
-    model = TwoTowerBinaryModel(64, 10, 
-            item_label_encoder, 
-            user_label_encoder,
-            review_dataset, user_dataset, item_dataset)
+    model = TwoTowerBinaryModel(64, 10, user_dataset, item_dataset)
     user_ids = [review_dataset[i]['user_id'] for i in range(32)]
     item_ids = [review_dataset[i]['item_id'] for i in range(32)]
     start = time.time()

@@ -16,9 +16,9 @@ class FeatureEmbeddingLayer(nn.Module):
     def __init__(self, embedding_dim, dataset):
         super(FeatureEmbeddingLayer, self).__init__()
         self.id_embedding = nn.Embedding(len(dataset), 200)
-        self.embed_categorical = EmbedCategory(122590, 50)
+        self.embed_categorical = EmbedCategory(200000, 50)
         self.embed_history = EmbedHistory(
-            nn.Embedding(122590, 50),
+            nn.Embedding(200000, 50),
             nn.TransformerEncoderLayer(d_model=50, nhead=2))
         self.embed_numerical = NormNumeric(len(dataset.numerical_features))
         self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
@@ -26,7 +26,7 @@ class FeatureEmbeddingLayer(nn.Module):
             "BAAI/bge-base-en-v1.5"
         )
         self.dataset = dataset
-        self.output = FeedForwardNetwork(dataset.input_dim, 32, embedding_dim)
+        self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # self.output = nn.Linear(dataset.input_dim, embedding_dim)
 

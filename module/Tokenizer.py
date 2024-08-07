@@ -23,7 +23,7 @@ class Tokenizer:
         return self.tokenizer.decode(token_ids)
 
 if __name__ == '__main__':
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
     print(tokenizer.tokenize("Hello, my dog is cute")["input_ids"])
     encoded = tokenizer.encode("Hello, my dog is cute")
     print(encoded)

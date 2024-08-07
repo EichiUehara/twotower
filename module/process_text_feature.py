@@ -8,7 +8,7 @@ def process_text_feature(
         max_length=max_length, return_tensors=return_tensors)
 
 if __name__ == '__main__':
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
     text_feature = "My dog is cute"
     tokenized = process_text_feature(text_feature, tokenizer)
     print(tokenized["input_ids"])

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     import time
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer('BAAI/bge-base-en-v1.5')
     review_dataset = ReviewDataset('All_Beauty', item_label_encoder, user_label_encoder)
     item_label_encoder.fit(review_dataset.dataframe['parent_asin'].unique())
     user_label_encoder.fit(review_dataset.dataframe['user_id'].unique())

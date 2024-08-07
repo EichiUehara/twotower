@@ -21,7 +21,7 @@ def process_text_history_feature(
 
 
 if __name__ == '__main__':
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
     text_history_feature = [
         ['hello' * 10, 'world' * 10], 
         ['foo' * 10], 

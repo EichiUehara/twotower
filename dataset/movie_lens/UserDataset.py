@@ -106,7 +106,7 @@ if __name__ == '__main__':
     from dataset.amazon_review.ItemDataset import ItemDataset
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
     user_dataset = UserDataset(
         'All_Beauty', tokenizer,
         item_label_encoder=item_label_encoder, user_label_encoder=user_label_encoder,

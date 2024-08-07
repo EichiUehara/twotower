@@ -108,7 +108,7 @@ class ItemDataset(Dataset):
 
 if __name__ == '__main__':
     item_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer("BAAI/bge-base-en-v1.5")
     item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
     item_dataset.item_label_encoder.fit(item_dataset.dataframe.index)
     print(len(item_dataset))

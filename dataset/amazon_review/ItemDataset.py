@@ -98,6 +98,7 @@ class ItemDataset(Dataset):
         
         # Return the batch in a format compatible with the model
         return {
+            'id': torch.tensor([item['id'] for item in batch], dtype=torch.long),
             'numerical_features': numerical_features_tensor,
             'categorical_features': categorical_features,
             'text_features': text_features,

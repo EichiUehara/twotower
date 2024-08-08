@@ -12,6 +12,7 @@ def process_text_history_feature(
         texts = [text for text in texts if text is not None]
         texts = "|".join(texts)
         new_text_history_feature.append(texts)
+    print(new_text_history_feature)
     return tokenizer.tokenize(
         new_text_history_feature,
         padding=padding, 

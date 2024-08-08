@@ -9,10 +9,11 @@ def process_text_history_feature(
     new_text_history_feature = []
     for texts in text_history_feature:
         texts = texts[-max_history_length:]
-        texts = [text for text in texts if text is not None]
+        texts = [text for text in texts if text is not None and len(text) > 0]
         texts = "|".join(texts)
         new_text_history_feature.append(texts)
     print(new_text_history_feature)
+    # new_text_history_feature = "|".join(["|".join(texts[-max_history_length:]) for texts in text_history_feature])
     return tokenizer.tokenize(
         new_text_history_feature,
         padding=padding, 

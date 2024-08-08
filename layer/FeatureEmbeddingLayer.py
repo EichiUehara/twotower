@@ -16,12 +16,12 @@ class FeatureEmbeddingLayer(nn.Module):
         self.id_embedding = nn.Embedding(
             self.dataset.hyperparameters['id']['num_classes'],
             self.dataset.hyperparameters['id']['embedding_dim']
-        )
+        ).to(self.device)
         self.output = FeedForwardNetwork(
             dataset.hyperparameters['feedforward_network']['input_dim'],
             embedding_dim * 2,
             embedding_dim
-        )
+        ).to(self.device)
         self.embed_categorical = {}
         self.embed_history = {}
         self.embed_text = {}
@@ -31,7 +31,7 @@ class FeatureEmbeddingLayer(nn.Module):
             self.embed_categorical[feature] = EmbedCategory(
                 dataset.hyperparameters['categorical_features'][feature]['num_classes'],
                 dataset.hyperparameters['categorical_features'][feature]['embedding_dim']
-            )
+            ).to(self.device)
         for feature in dataset.history_features:
             self.embed_history[feature] = EmbedHistory(
                 nn.Embedding(
@@ -42,15 +42,15 @@ class FeatureEmbeddingLayer(nn.Module):
                     dataset.hyperparameters['history_features'][feature]['embedding_dim'], 
                     dataset.hyperparameters['history_features'][feature]['transformer_head']
                 )
-            )
+            ).to(self.device)
         for feature in dataset.text_features:
             self.embed_text[feature] = EmbedText(
                 model_name
-            )
+            ).to(self.device)
         for feature in dataset.text_history_features:
             self.embed_text_history[feature] = EmbedTextHistory(
                 model_name
-            )
+            ).to(self.device)
 
     def forward(self, ids)->torch.Tensor:
         ids = ids.to(self.device)

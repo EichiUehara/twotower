@@ -53,39 +53,27 @@ class FeatureEmbeddingLayer(nn.Module):
             ).to(self.device)
 
     def forward(self, ids)->torch.Tensor:
-        ids = ids.to(self.device)
+        # ids = ids.to(self.device)
         batch = [self.dataset[id] for id in ids]
-        batch = self.dataset.collate_fn(batch)
-        batch = {
-            'id': batch['id'].to(self.device),
-            'numerical_features': batch['numerical_features'].to(self.device),
-            'categorical_features': {k: v.to(self.device) for k, v in batch['categorical_features'].items()},
-            'text_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_features'].items()},
-            'history_features': {k: v.to(self.device) for k, v in batch['history_features'].items()},
-            'text_history_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_history_features'].items()}
-        }
-
-        print(f"ids device: {ids.device}")
-        print(f"Batch 'id' device: {batch['id'].device}")
-        print(f"Batch 'numerical_features' device: {batch['numerical_features'].device}")
+        batch = self.dataset.collate_fn(batch).to(self.device)
+        # batch = {
+        #     'id': batch['id'].to(self.device),
+        #     'numerical_features': batch['numerical_features'].to(self.device),
+        #     'categorical_features': {k: v.to(self.device) for k, v in batch['categorical_features'].items()},
+        #     'text_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_features'].items()},
+        #     'history_features': {k: v.to(self.device) for k, v in batch['history_features'].items()},
+        #     'text_history_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_history_features'].items()}
+        # }
         embedded_features = []
         embedded_features.append(self.id_embedding(batch['id']))
         embedded_features.append(self.embed_numerical(batch['numerical_features']))
-        
         for feature in self.dataset.categorical_features:
-            print(f"Batch 'categorical_features[{feature}]' device: {batch['categorical_features'][feature].device}")
             embedded_features.append(self.embed_categorical[feature](batch['categorical_features'][feature]))
-            
         for feature in self.dataset.history_features:
-            print(f"Batch 'history_features[{feature}]' device: {batch['history_features'][feature].device}")
             embedded_features.append(self.embed_history[feature](batch['history_features'][feature]))
-            
         for feature in self.dataset.text_features:
-            print(f"Batch 'text_features[{feature}]' device: {batch['text_features'][feature].device}")
             embedded_features.append(self.embed_text[feature](batch['text_features'][feature]))
-            
         for feature in self.dataset.text_history_features:
-            print(f"Batch 'text_history_features[{feature}]' device: {batch['text_history_features'][feature].device}")
             embedded_features.append(self.embed_text_history[feature](batch['text_history_features'][feature]))
         concatenated = torch.cat(embedded_features, dim=1)
         return self.output(concatenated)

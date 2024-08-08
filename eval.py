@@ -6,9 +6,9 @@ from model.TwoTowerModel import TwoTowerBinaryModel
 
 if __name__ == '__main__':
     from module.Tokenizer import Tokenizer
-    from dataset.amazon_review.UserDataset import UserDataset
-    from dataset.amazon_review.ItemDataset import ItemDataset
-    from dataset.amazon_review.ReviewDataset import ReviewDataset
+    from dataset.amazon_review_base.UserDataset import UserDataset
+    from dataset.amazon_review_base.ItemDataset import ItemDataset
+    from dataset.amazon_review_base.ReviewDataset import ReviewDataset
     import time
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()

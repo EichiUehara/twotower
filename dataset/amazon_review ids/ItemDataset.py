@@ -17,7 +17,8 @@ class ItemDataset(Dataset):
         self.dataframe = item_df
 
         self.max_history_length = 10
-        self.item_label_encoder = item_label_encoder
+        self.item_label_encoder = LabelEncoder()
+        self.item_label_encoder.fit(self.dataframe.index)
         if hasattr(self.item_label_encoder, 'classes_') == False:
             self.item_label_encoder.fit(self.dataframe.index)
         self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
@@ -59,7 +60,7 @@ class ItemDataset(Dataset):
         }
 
     def collate_fn(self, batch):
-        collate_fn(batch,
+        return collate_fn(batch,
                      self.numerical_features,
                      self.categorical_features,
                      self.text_features,
@@ -69,8 +70,8 @@ class ItemDataset(Dataset):
                      self.input_dim)
 
 if __name__ == '__main__':
-    item_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer()
-    item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
-    item_dataset.item_label_encoder.fit(item_dataset.dataframe.index)
+    item_dataset = ItemDataset('All_Beauty')
     print(len(item_dataset))
+    batch = [item_dataset[i] for i in item_dataset.dataframe.index[0:32]]
+    print(batch)
+    print(item_dataset.collate_fn(batch))

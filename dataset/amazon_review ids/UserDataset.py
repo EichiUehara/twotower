@@ -7,7 +7,7 @@ from module.Tokenizer import Tokenizer
 
 
 class UserDataset(Dataset):
-    def __init__(self, amazon_category, item_label_encoder: LabelEncoder):
+    def __init__(self, amazon_category):
         review_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
         review_df = review_df[['timestamp', 'user_id', 'verified_purchase', 'rating', 'parent_asin', 'text']]
         review_df = review_df.sort_values(by=['user_id', 'timestamp'], ascending=[True, False])
@@ -26,9 +26,12 @@ class UserDataset(Dataset):
         self.dataframe = user_df
         self.max_history_length = 10
         self.tokenizer = Tokenizer()
-        self.user_label_encoder = user_label_encoder
+        self.user_label_encoder = LabelEncoder()
+        self.user_label_encoder.fit(self.dataframe.index)
         self.user_id_to_index = {user_id: i for i, user_id in enumerate(self.user_label_encoder.classes_)}
-        self.item_label_encoder = item_label_encoder
+        self.index_to_user_id = {i: user_id for i, user_id in enumerate(self.user_label_encoder.classes_)}
+        self.item_label_encoder = LabelEncoder()
+        self.item_label_encoder.fit([item_id for item_ids in self.dataframe['reviewed_item_history'] for item_id in item_ids])
         self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
 
 
@@ -60,18 +63,15 @@ class UserDataset(Dataset):
             'average_rating': average_rating, # average_rating: float
         }
     def collate_fn(self, batch):
-        collate_fn(
+        return collate_fn(
             batch, self.numerical_features, self.categorical_features, 
             self.text_features, self.history_features, self.text_history_features, 
             self.tokenizer, self.max_history_length)
 
         
 if __name__ == '__main__':
-    from dataset.amazon_review.ItemDataset import ItemDataset
-    item_label_encoder = LabelEncoder()
-    user_label_encoder = LabelEncoder()
-    item_dataset = ItemDataset('All_Beauty')
-    user_dataset = UserDataset('All_Beauty', item_label_encoder=item_dataset.item_label_encoder)
-    batch = next(iter(user_dataset))
+    user_dataset = UserDataset('All_Beauty')
+    print(len(user_dataset))
+    batch = [user_dataset[i] for i in user_dataset.dataframe.index[0:32]]
     print(batch)
-    print(user_dataset.collate_fn([batch, batch]))
+    print(user_dataset.collate_fn(batch))

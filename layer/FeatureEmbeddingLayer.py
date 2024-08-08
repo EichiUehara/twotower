@@ -59,9 +59,9 @@ class FeatureEmbeddingLayer(nn.Module):
     
 if __name__ == '__main__':
     from module.Tokenizer import Tokenizer
-    from dataset.amazon_review.UserDataset import UserDataset
+    from dataset.amazon_review_base.UserDataset import UserDataset
     from sklearn.preprocessing import LabelEncoder
-    from dataset.amazon_review.ItemDataset import ItemDataset
+    from dataset.amazon_review_base.ItemDataset import ItemDataset
     import time
     item_label_encoder = LabelEncoder()
     user_label_encoder = LabelEncoder()

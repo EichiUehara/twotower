@@ -7,6 +7,10 @@ class ReviewDataset(Dataset):
         review_df = review_df[['user_id', 'parent_asin', 'rating']]
         review_df = review_df.drop_duplicates(subset=['user_id', 'parent_asin'], keep='first')
         review_df['rating'] = review_df['rating'].apply(lambda x: 1 if x >= 4 else 0)
+        item_metadata = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full").to_pandas()
+        item_ids = item_metadata['parent_asin'].unique()
+        ## drop item_ids that are not in item_metadata
+        # review_df = review_df[review_df['parent_asin'].isin(item_ids)]
         self.dataframe = review_df
 
     def __len__(self):
@@ -22,5 +26,6 @@ class ReviewDataset(Dataset):
         
 if __name__ == '__main__':
     review_dataset = ReviewDataset('All_Beauty')
-    user_ids = [review_dataset[i]['user_id'] for i in range(32)]
-    item_ids = [review_dataset[i]['item_id'] for i in range(32)]
+    print(len(review_dataset))
+    batch = next(iter(review_dataset))
+    print(batch['user_id'], batch['item_id'], batch['rating'])

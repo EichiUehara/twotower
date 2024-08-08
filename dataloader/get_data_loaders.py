@@ -9,9 +9,9 @@ def get_data_loaders(dataset: Dataset, batch_size, train_size, num_workers=4, co
 
 if __name__ == '__main__':
     from sklearn.preprocessing import LabelEncoder
-    from dataset.amazon_review.UserDataset import UserDataset
-    from dataset.amazon_review.ItemDataset import ItemDataset
-    from dataset.amazon_review.ReviewDataset import ReviewDataset
+    from dataset.amazon_review_base.UserDataset import UserDataset
+    from dataset.amazon_review_base.ItemDataset import ItemDataset
+    from dataset.amazon_review_base.ReviewDataset import ReviewDataset
     from module.Tokenizer import Tokenizer
     import os
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'

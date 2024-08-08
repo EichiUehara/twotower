@@ -23,7 +23,7 @@ def collate_fn(
     
     # Process history features
     history_features = {
-        k: torch.stack([process_history_feature(torch.tensor(item[k]), max_history_length) for item in batch])
+        k: torch.stack([process_history_feature(item[k], max_history_length) for item in batch])
         for k in history_features
     }
     

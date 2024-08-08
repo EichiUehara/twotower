@@ -55,16 +55,8 @@ class FeatureEmbeddingLayer(nn.Module):
     def forward(self, ids)->torch.Tensor:
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
-        # batch = {
-        #     'id': batch['id'].to(self.device),
-        #     'numerical_features': batch['numerical_features'].to(self.device),
-        #     'categorical_features': {k: v.to(self.device) for k, v in batch['categorical_features'].items()},
-        #     'text_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_features'].items()},
-        #     'history_features': {k: v.to(self.device) for k, v in batch['history_features'].items()},
-        #     'text_history_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_history_features'].items()}
-        # }
         embedded_features = []
-        embedded_features.append(self.id_embedding(batch['id']).to(self.device))
+        embedded_features.append(self.id_embedding(batch['id'].to(self.device)))
         embedded_features.append(self.embed_numerical(batch['numerical_features'].to(self.device)))
         for feature in self.dataset.categorical_features:
             embedded_features.append(self.embed_categorical[feature](batch['categorical_features'][feature].to(self.device)))

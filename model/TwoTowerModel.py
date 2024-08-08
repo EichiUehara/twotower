@@ -60,9 +60,9 @@ class TwoTowerBinaryModel(nn.Module):
             running_loss = 0.0
             running_accuracy = 0.0
             for batch in data_loader:
-                user_features = batch['user_id'].to(self.device)
-                item_features = batch['item_id'].to(self.device)
-                labels = batch['rating'].to(self.device)
+                user_features = batch['user_id']
+                item_features = batch['item_id']
+                labels = batch['rating']
                 loss, accuracy = self.train_step(optimizer, user_features, item_features, labels)
                 i += 1
                 running_loss += loss

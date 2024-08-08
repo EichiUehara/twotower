@@ -8,3 +8,5 @@ miniconda.sh
 *.pth
 runs/
 *%.txt
+*%.txt
+score/

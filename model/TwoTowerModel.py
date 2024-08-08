@@ -110,7 +110,7 @@ class TwoTowerBinaryModel(nn.Module):
         print(f"Validation Accuracy: {val_running_accuracy / len(val_dataloader)}")
         print(f"Validation AUC: {roc_auc_score(all_labels, all_preds):.4f}")
         print(f"Validation LogLoss: {log_loss(all_labels, all_preds):.4f}")
-        with open(f'val_auc_{roc_auc_score(all_labels, all_preds):.4f}_val_logloss_{log_loss(all_labels, all_preds):.4f}_val_acc_{val_running_accuracy / len(val_dataloader)}.txt', 'w') as f:
+        with open(f'score/val_auc_{roc_auc_score(all_labels, all_preds):.4f}_val_logloss_{log_loss(all_labels, all_preds):.4f}_val_acc_{val_running_accuracy / len(val_dataloader)}.txt', 'w') as f:
             f.write(f'Validation Accuracy: {val_running_accuracy / len(val_dataloader)}\n')
             f.write(f'Validation AUC: {roc_auc_score(all_labels, all_preds):.4f}\n')
             f.write(f'Validation LogLoss: {log_loss(all_labels, all_preds):.4f}\n')

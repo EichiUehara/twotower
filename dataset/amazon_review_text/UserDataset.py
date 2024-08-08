@@ -28,6 +28,8 @@ class UserDataset(UserDataset):
             'text_history_features': {
                 'review_text_history': {
                 }
+            },
+            'feedforward_network': {
             }
         }
         input_dim = 0

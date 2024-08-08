@@ -22,7 +22,7 @@ class UserDataset(UserDataset):
                 'purchased_item_ids': {
                     'num_classes': self.num_classes['item_id'], 
                     'embedding_dim': embedding_dim(self.num_classes['item_id']),
-                    'transformer_head': math.ceil(math.log2(math.sqrt(self.num_classes['item_id']))),
+                    'transformer_head': math.ceil(math.log2(math.sqrt(embedding_dim(self.num_classes['item_id']))))
                 }
             },
             'text_history_features': {

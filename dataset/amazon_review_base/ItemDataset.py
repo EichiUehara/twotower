@@ -14,7 +14,7 @@ class ItemDataset(Dataset):
             item_df = pd.read_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip')
         else:
             item_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
-            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False)
+            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False, escapechar='\\')
             with zipfile.ZipFile(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
                 z.write(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
             os.remove(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')

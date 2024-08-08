@@ -16,9 +16,9 @@ if __name__ == '__main__':
     train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 2048, 0.8, num_workers=12)
     model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=32)
     # save the model
-    torch.save(model.state_dict(), 'model.pth')
+    torch.save(model.state_dict(), 'movie_lens.pth')
     # load the model
-    model.load_state_dict(torch.load('model.pth'))
+    model.load_state_dict(torch.load('movie_lens.pth'))
     # recommend for a user
     model.index_train(data_loader=train_dataloader)
     user_ids = next(iter(train_dataloader))['user_id'][:10]

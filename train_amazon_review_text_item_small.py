@@ -12,11 +12,11 @@ if __name__ == '__main__':
     item_dataset = ItemDataset(amazon_category)
     model = TwoTowerBinaryModel(64, 10, user_dataset, item_dataset)
     train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 256, 0.8, num_workers=8)
-    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader)
+    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=32)
     # save the model
-    torch.save(model.state_dict(), 'model.pth')
+    torch.save(model.state_dict(), 'amazon_review_text_item_small.pth')
     # load the model
-    model.load_state_dict(torch.load('model.pth'))
+    model.load_state_dict(torch.load('amazon_review_text_item_small.pth'))
     # recommend for a user
     model.index_train(data_loader=train_dataloader)
     user_ids = next(iter(train_dataloader))['user_id'][:10]

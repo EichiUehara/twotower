@@ -34,11 +34,12 @@ class TwoTowerBinaryModel(nn.Module):
             for batch in data_loader:
                 item_features = batch['item_id']
                 item_emb = self.item_features_embedding(item_features)
-                item_ids.append(item_features)
+                item_ids.append([self.item_features_embedding.dataset[item_id]['id'] for item_id in item_features])
                 item_embs.append(item_emb)
-        item_ids = torch.cat(item_ids)
+        item_ids = np.array(item_ids).flatten()
+        # item_ids = [item_id for batch in item_ids for item_id in batch]
         item_embs = torch.cat(item_embs)
-        self.FaissIndex.train(item_embs.cpu().numpy(), item_ids.cpu().numpy())
+        self.FaissIndex.train(item_embs.cpu().numpy(), item_ids)
     
     def index_add(self, embedding, item_ids):
         self.FaissIndex.add(embedding, item_ids)
@@ -47,7 +48,7 @@ class TwoTowerBinaryModel(nn.Module):
         with torch.no_grad():
             user_emb = self.user_features_embedding(user_ids)
             _ , indices = self.FaissIndex.search(user_emb, topk)
-            return [list(set(indices[i])) for i in range(len(indices))]
+            return [self.item_features_embedding.dataset.dataframe.index[item_id] for item_id in indices]
     
     def fit(self, optimizer, data_loader, val_data_loader=None, epochs=5):
         self.train()

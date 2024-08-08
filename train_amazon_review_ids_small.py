@@ -12,9 +12,9 @@ if __name__ == '__main__':
     item_dataset = ItemDataset(amazon_category)
     model = TwoTowerBinaryModel(128, 10, user_dataset, item_dataset)
     train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 1028, 0.8, num_workers=12)
-    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=8)
-    # save the model
-    torch.save(model.state_dict(), 'amazon_review_ids_small.pth')
+    # model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=8)
+    # # save the model
+    # torch.save(model.state_dict(), 'amazon_review_ids_small.pth')
     # load the model
     model.load_state_dict(torch.load('amazon_review_ids_small.pth'))
     # recommend for a user
@@ -22,14 +22,12 @@ if __name__ == '__main__':
     user_ids = next(iter(train_dataloader))['user_id'][:10]
     recommended_item_ids = model.index_search(user_ids, 30)
     for user_id, item_ids in zip(user_ids, recommended_item_ids):
-        print(f"Recommended items: {item_ids} for user: {user_id.item()}")
+        print(f"Recommended items: {item_ids} for user: {user_id}")
         for item_id in item_ids:
             print(item_dataset.dataframe.loc[item_id])
             # Ensure embeddings are normalized before calculating similarity
-            user_emb = torch.nn.functional.normalize(model.user_features_embedding(torch.tensor([user_id.item()])), dim=1)
-            item_emb = torch.nn.functional.normalize(model.item_features_embedding(torch.tensor([item_id])), dim=1)
-
+            user_emb = torch.nn.functional.normalize(model.user_features_embedding([user_id]), dim=1)
+            item_emb = torch.nn.functional.normalize(model.item_features_embedding([item_id]), dim=1)
             similarity = torch.nn.functional.cosine_similarity(user_emb, item_emb, dim=1)
             print(f"Cosine Similarity: {similarity.item()}")
             print("dot product:", torch.mm(user_emb, item_emb.T).item())
-            # print("dot product:", torch.mm(user_emb, item_emb.T).item() / (torch.norm(user_emb) * torch.norm(item_emb)))

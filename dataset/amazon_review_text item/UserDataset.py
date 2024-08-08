@@ -1,5 +1,5 @@
-from dataset.amazon_review_base.ItemDataset import ItemDataset
 from dataset.amazon_review_base.UserDataset import UserDataset
+from module.DimCalculator import embedding_dim
 class UserDataset(UserDataset):
     def __init__(self, category):
         super().__init__(category)
@@ -8,7 +8,21 @@ class UserDataset(UserDataset):
         self.text_features = []
         self.history_features = ['purchased_item_ids']
         self.text_history_features = []
-
+        self.hyperparameters = {
+            'categorical_features': {
+            },
+            'text_features': {
+            },
+            'history_features': {
+                'purchased_item_ids': {
+                    'num_classes': self.num_classes['item_id'], 
+                    'embedding_dim': embedding_dim(self.num_classes['item_id']),
+                    'max_history_length': 10
+                }
+            },
+            'text_history_features': {
+            }
+        }
 if __name__ == '__main__':
     user_dataset = UserDataset('All_Beauty')
     print(len(user_dataset))

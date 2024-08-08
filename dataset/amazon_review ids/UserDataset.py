@@ -1,4 +1,3 @@
-from dataset.amazon_review_base.ItemDataset import ItemDataset
 from dataset.amazon_review_base.UserDataset import UserDataset
 from module.DimCalculator import embedding_dim
 class UserDataset(UserDataset):
@@ -18,7 +17,7 @@ class UserDataset(UserDataset):
                 'purchased_item_ids': {
                     'num_classes': self.num_classes['item_id'], 
                     'embedding_dim': embedding_dim(self.num_classes['item_id']),
-                    'max_length': 10
+                    'max_history_length': 10
                 }
             },
             'text_history_features': {

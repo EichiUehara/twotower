@@ -1,4 +1,3 @@
-from dataset.amazon_review_base.ItemDataset import ItemDataset
 from dataset.amazon_review_base.UserDataset import UserDataset
 from module.DimCalculator import embedding_dim
 class UserDataset(UserDataset):

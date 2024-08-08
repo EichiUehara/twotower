@@ -8,7 +8,9 @@ def process_text_history_feature(
     ):
     new_text_history_feature = []
     for texts in text_history_feature:
+        print(texts)
         texts = texts[-max_history_length:]
+        print(texts)
         texts = "|".join(texts)
         new_text_history_feature.append(texts)
     return tokenizer.tokenize(

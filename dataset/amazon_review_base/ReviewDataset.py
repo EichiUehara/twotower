@@ -1,16 +1,32 @@
+import os
+import zipfile
+import pandas as pd
+
 from torch.utils.data import Dataset
 from datasets import load_dataset
 
 class ReviewDataset(Dataset):
     def __init__(self, amazon_category):
-        review_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full").to_pandas()
+        if os.path.exists(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip'):
+            review_df = pd.read_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip')
+        else:
+            review_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
+            review_df.to_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv', index=False)
+            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+                z.write(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
+            os.remove(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
+        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip'):
+            item_df = pd.read_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip')
+        else:
+            item_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
+            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False)
+            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+                z.write(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
+            os.remove(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
         review_df = review_df[['user_id', 'parent_asin', 'rating']]
         review_df = review_df.drop_duplicates(subset=['user_id', 'parent_asin'], keep='first')
         review_df['rating'] = review_df['rating'].apply(lambda x: 1 if x >= 4 else 0)
-        item_metadata = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full").to_pandas()
-        item_ids = item_metadata['parent_asin'].unique()
-        ## drop item_ids that are not in item_metadata
-        # review_df = review_df[review_df['parent_asin'].isin(item_ids)]
+        review_df = review_df[review_df['parent_asin'].isin(item_df['parent_asin'].unique())]
         self.dataframe = review_df
 
     def __len__(self):

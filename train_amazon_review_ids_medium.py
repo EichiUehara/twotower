@@ -1,5 +1,6 @@
 amazon_category = 'Electronics'
-
+import warnings
+warnings.filterwarnings("ignore", message="User provided device_type of 'cuda', but CUDA is not available. Disabling")
 if __name__ == '__main__':
     import torch
     from model.TwoTowerModel import TwoTowerBinaryModel

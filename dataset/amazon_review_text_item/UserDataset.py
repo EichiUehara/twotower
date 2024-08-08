@@ -1,5 +1,6 @@
+import math
 from dataset.amazon_review_base.UserDataset import UserDataset
-from module.DimCalculator import embedding_dim
+from module.embedding_dim import embedding_dim
 class UserDataset(UserDataset):
     def __init__(self, category):
         super().__init__(category)
@@ -21,7 +22,7 @@ class UserDataset(UserDataset):
                 'purchased_item_ids': {
                     'num_classes': self.num_classes['item_id'], 
                     'embedding_dim': embedding_dim(self.num_classes['item_id']),
-                    'max_history_length': 10
+                    'transformer_head': math.ceil(math.sqrt(math.sqrt(embedding_dim(self.num_classes['item_id'])))),
                 }
             },
             'text_history_features': {
@@ -33,10 +34,10 @@ class UserDataset(UserDataset):
         input_dim += self.hyperparameters['id']['embedding_dim']
         for feature in self.numerical_features:
             input_dim += 1
-        for feature in self.hyperparameters['categorical_features']:
+        for feature in self.categorical_features:
             input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
         for feature in self.history_features:
-            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+            input_dim += self.hyperparameters['history_features'][feature]['embedding_dim']
         for feature in self.text_features:
             input_dim += 768
         for feature in self.text_history_features:

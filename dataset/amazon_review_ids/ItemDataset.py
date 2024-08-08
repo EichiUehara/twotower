@@ -1,5 +1,5 @@
 from dataset.amazon_review_base.ItemDataset import ItemDataset
-from module.DimCalculator import embedding_dim
+from module.embedding_dim import embedding_dim
 class ItemDataset(ItemDataset):
     def __init__(self, category):
         super().__init__(category)
@@ -36,10 +36,10 @@ class ItemDataset(ItemDataset):
         input_dim += self.hyperparameters['id']['embedding_dim']
         for feature in self.numerical_features:
             input_dim += 1
-        for feature in self.hyperparameters['categorical_features']:
+        for feature in self.categorical_features:
             input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
         for feature in self.history_features:
-            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+            input_dim += self.hyperparameters['history_features'][feature]['embedding_dim']
         for feature in self.text_features:
             input_dim += 768
         for feature in self.text_history_features:

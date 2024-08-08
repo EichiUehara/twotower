@@ -1,3 +1,6 @@
+import os
+import zipfile
+import pandas as pd
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -7,15 +10,19 @@ from sklearn.preprocessing import LabelEncoder
 
 class ItemDataset(Dataset):
     def __init__(self, amazon_category):
-
-        item_metadata = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True)
-        item_df = item_metadata.to_pandas()
+        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip'):
+            item_df = pd.read_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip')
+        else:
+            item_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
+            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False)
+            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+                z.write(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
+            os.remove(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
         item_df = item_df[['parent_asin', 'main_category', 'average_rating', 'rating_number', 'store', 'details']]
         item_df = item_df.drop_duplicates(subset='parent_asin')
         item_df = item_df.reset_index(drop=True)
         item_df = item_df.set_index('parent_asin')        
         self.dataframe = item_df
-
         self.max_history_length = 10
         self.item_label_encoder = LabelEncoder()
         self.item_label_encoder.fit(self.dataframe.index)
@@ -34,7 +41,11 @@ class ItemDataset(Dataset):
         self.text_features = ['details']
         self.history_features = []
         self.text_history_features = []
-
+        self.num_classes = {
+            "id": len(self.dataframe),
+            'main_category': len(self.main_category_label_encoder.classes_),
+            'store': len(self.store_label_encoder.classes_)
+        }
     def __len__(self):
         return len(self.dataframe)
 
@@ -60,7 +71,7 @@ class ItemDataset(Dataset):
                      self.history_features,
                      self.text_history_features,
                      self.tokenizer,
-                     self.input_dim)
+                     self.max_history_length)
 
 if __name__ == '__main__':
     item_dataset = ItemDataset('All_Beauty')

@@ -1,10 +1,10 @@
 import time
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from torch.nn import functional as F
 import torch
 from torch import nn
 from torch.cuda.amp import GradScaler, autocast
+from torch.utils.tensorboard import SummaryWriter
 scaler = GradScaler()
 
 from dataloader.get_data_loaders import get_data_loaders
@@ -13,13 +13,14 @@ from module.FaissIndex import FaissIndex
 
 
 class TwoTowerBinaryModel(nn.Module):
-    def __init__(self, embedding_dim, num_faiss_clusters, UserDataset, ItemDataset):
+    def __init__(self, embedding_dim, num_faiss_clusters, UserDataset, ItemDataset, model_name="BAAI/bge-base-en-v1.5"):
         super(TwoTowerBinaryModel, self).__init__()
-        self.user_features_embedding = FeatureEmbeddingLayer(embedding_dim, UserDataset)
-        self.item_features_embedding = FeatureEmbeddingLayer(embedding_dim, ItemDataset)
+        self.user_features_embedding = FeatureEmbeddingLayer(embedding_dim, UserDataset, model_name=model_name)
+        self.item_features_embedding = FeatureEmbeddingLayer(embedding_dim, ItemDataset, model_name=model_name)
         self.FaissIndex = FaissIndex(embedding_dim, num_faiss_clusters)
         self.get_data_loaders = get_data_loaders
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.writer = SummaryWriter(log_dir=f"./runs/{UserDataset.__class__.__name__}_vs_{ItemDataset.__class__.__name__}_embedding_dim_{embedding_dim}".replace(' ', ''))
 
     def forward(self, user_ids, item_ids):
         user_emb = self.user_features_embedding(user_ids)
@@ -41,23 +42,31 @@ class TwoTowerBinaryModel(nn.Module):
             _ , indices = self.FaissIndex.search(user_emb, topk)
             return indices
     
-    def fit(self, optimizer, data_loader):
-        print(f"Training on {self.device}")
-        self.to(self.device)
-        self.train()
-        start = time.time()
-        i = 0
-        for batch in data_loader:
-            user_features = batch['user_id']
-            item_features = batch['item_id']
-            labels = batch['rating']
-            loss = self.train_step(optimizer, user_features, item_features, labels)
-            i += 1
-            if i % 100 == 0:
-                print(f"Loss: {loss}")
-                print(f"Time: {time.time() - start}")
-                start = time.time()
-                print(f"Batches: {i}")
+    def fit(self, optimizer, data_loader, val_data_loader=None, epochs=5):
+        for epoch in range(epochs):
+            print(f"Training on {self.device}")
+            self.to(self.device)
+            self.train()
+            start = time.time()
+            i = 0
+            running_loss = 0.0
+            running_accuracy = 0.0
+            for batch in data_loader:
+                user_features = batch['user_id']
+                item_features = batch['item_id']
+                labels = batch['rating']
+                loss, accuracy = self.train_step(optimizer, user_features, item_features, labels)
+                i += 1
+                running_loss += loss
+                running_accuracy += accuracy
+                if i % 100 == 0:
+                    print(f"Loss: {running_loss / i:.4f}, Accuracy: {running_accuracy / i * 100:.2f}%")
+                    print(f"Time: {time.time() - start}")
+                    start = time.time()
+                    print(f"Batches: {i}")
+                    self.writer.add_scalar('Loss', running_loss / i, epoch)
+            if val_data_loader:
+                self.evaluate(val_data_loader)
 
     def train_step(self, optimizer, user_features, item_features, labels):
         labels = labels.float().to(self.device)
@@ -71,38 +80,30 @@ class TwoTowerBinaryModel(nn.Module):
         probabilities = torch.sigmoid(logits)
         predictions = probabilities > 0.5
         accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
-        print(f"Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%")
-        return loss.item()
+        # print(f"Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%")
+        return loss.item(), accuracy
+    
+    def evaluate(self, val_dataloader):
+        self.eval()
+        val_running_loss = 0.0
+        val_running_accuracy = 0.0
+        i = 0
+        with torch.no_grad():
+            for batch in val_dataloader:
+                user_features = batch['user_id']
+                item_features = batch['item_id']
+                labels = batch['rating']
+                logits = self.forward(user_features, item_features)
+                probabilities = torch.sigmoid(logits)
+                predictions = probabilities > 0.5
+                accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
+                val_running_loss += F.binary_cross_entropy_with_logits(logits, labels.float().to(self.device)).item()
+                val_running_accuracy += accuracy
+                i += 1
+        print(f"Validation Loss: {val_running_loss / i:.4f}, Validation Accuracy: {val_running_accuracy / i * 100:.2f}%")
+        self.writer.add_scalar('Validation Loss', val_running_loss / i, i)
+        self.writer.add_scalar('Validation Accuracy', val_running_accuracy / i * 100, i)
+                
 
     def inference(self, user_features, topk):
         return self.index_search(user_features, topk)
-
-
-if __name__ == '__main__':
-    from module.Tokenizer import Tokenizer
-    from dataset.amazon_review_base.UserDataset import UserDataset
-    from dataset.amazon_review_base.ItemDataset import ItemDataset
-    from dataset.amazon_review_base.ReviewDataset import ReviewDataset
-    import time
-    item_label_encoder = LabelEncoder()
-    user_label_encoder = LabelEncoder()
-    tokenizer = Tokenizer('BAAI/bge-base-en-v1.5')
-    review_dataset = ReviewDataset('All_Beauty', item_label_encoder, user_label_encoder)
-    item_label_encoder.fit(review_dataset.dataframe['parent_asin'].unique())
-    user_label_encoder.fit(review_dataset.dataframe['user_id'].unique())
-    user_dataset = UserDataset(
-        'All_Beauty', tokenizer,
-        item_label_encoder=item_label_encoder, user_label_encoder=user_label_encoder,
-        max_history_length=10)
-    item_dataset = ItemDataset('All_Beauty', tokenizer, item_label_encoder=item_label_encoder)
-    model = TwoTowerBinaryModel(64, 10, user_dataset, item_dataset)
-    user_ids = [review_dataset[i]['user_id'] for i in range(32)]
-    item_ids = [review_dataset[i]['item_id'] for i in range(32)]
-    start = time.time()
-    print(model(user_ids, item_ids))
-    print(time.time() - start)
-    # model.index_add(item_ids, item
-    # model.index_train()
-    # print(model.index_search(ids, 10))
-    # model.fit(torch.optim.Adam(model.parameters()), get_data_loaders(user_dataset, item_dataset, review_dataset, 32))
-    # print(model.inference(ids, 10))

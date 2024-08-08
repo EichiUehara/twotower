@@ -33,19 +33,11 @@ class UserDataset(Dataset):
         self.item_label_encoder = LabelEncoder()
         self.item_label_encoder.fit([item_id for item_ids in self.dataframe['reviewed_item_history'] for item_id in item_ids])
         self.item_id_to_index = {item_id: i for i, item_id in enumerate(self.item_label_encoder.classes_)}
-
-
         self.numerical_features = ['average_rating']
         self.categorical_features = []
         self.text_features = []
         self.history_features = ['purchased_item_ids']
         self.text_history_features = ['review_text_history']
-        self.input_dim = 200 + \
-                         len(self.numerical_features) + \
-                         len(self.categorical_features) * 50 + \
-                         len(self.text_features)* 768 + \
-                         len(self.history_features)* 50 + \
-                         len(self.text_history_features)* 768
 
     def __len__(self):
         return len(self.dataframe)

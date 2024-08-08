@@ -22,9 +22,9 @@ class FeatureEmbeddingLayer(nn.Module):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.dataset = dataset
         self.output = FeedForwardNetwork(
-            dataset.hyperparameters['feedforward_network']['input_dim'],
-            dataset.hyperparameters['feedforward_network']['hidden_dim'],
-            dataset.hyperparameters['feedforward_network']['output_dim']
+            dataset.feedforward_network['input_dim'],
+            dataset.feedforward_network['hidden_dim'],
+            dataset.feedforward_network['output_dim']
         )
         self.embed_categorical = {}
         self.embed_history = {}

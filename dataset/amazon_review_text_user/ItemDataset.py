@@ -5,7 +5,7 @@ class ItemDataset(ItemDataset):
         super().__init__(category)
         self.numerical_features = ['average_rating', 'rating_number']
         self.categorical_features = ['main_category', 'store']
-        self.text_features = ['details']
+        self.text_features = []
         self.history_features = []
         self.text_history_features = []
         self.hyperparameters = {
@@ -14,21 +14,31 @@ class ItemDataset(ItemDataset):
                     'num_classes': self.num_classes['main_category'], 
                     'embedding_dim': embedding_dim(self.num_classes['main_category'])
                 },
-                'store': {
-                    'num_classes': self.num_classes['store'], 
-                    'embedding_dim': embedding_dim(self.num_classes['store'])
-                }
             },
             'text_features': {
-                'details': {
-                    'max_length': 512
-                }
             },
             'history_features': {
             },
             'text_history_features': {
             }
         }
+        input_dim = 0
+        input_dim += self.hyperparameters['id']['embedding_dim']
+        for feature in self.numerical_features:
+            input_dim += 1
+        for feature in self.hyperparameters['categorical_features']:
+            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+        for feature in self.history_features:
+            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+        for feature in self.text_features:
+            input_dim += 768
+        for feature in self.text_history_features:
+            input_dim += 768
+        self.feedforward_network = {
+                'input_dim': input_dim,
+                'hidden_dim': 512,
+                'output_dim': 256
+            }
 if __name__ == '__main__':
     item_dataset = ItemDataset('All_Beauty')
     print(len(item_dataset))

@@ -7,7 +7,7 @@ class UserDataset(UserDataset):
         self.categorical_features = []
         self.text_features = []
         self.history_features = ['purchased_item_ids']
-        self.text_history_features = ['review_text_history']
+        self.text_history_features = []
         self.hyperparameters = {
             'categorical_features': {
             },
@@ -21,13 +21,25 @@ class UserDataset(UserDataset):
                 }
             },
             'text_history_features': {
-                'review_text_history': {
-                    'max_history_length': 10,
-                    'max_length': 512
-                }
             }
         }
-
+        input_dim = 0
+        input_dim += self.hyperparameters['id']['embedding_dim']
+        for feature in self.numerical_features:
+            input_dim += 1
+        for feature in self.hyperparameters['categorical_features']:
+            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+        for feature in self.history_features:
+            input_dim += self.hyperparameters['categorical_features'][feature]['embedding_dim']
+        for feature in self.text_features:
+            input_dim += 768
+        for feature in self.text_history_features:
+            input_dim += 768
+        self.feedforward_network = {
+                'input_dim': input_dim,
+                'hidden_dim': 512,
+                'output_dim': 256
+            }
 if __name__ == '__main__':
     user_dataset = UserDataset('All_Beauty')
     print(len(user_dataset))

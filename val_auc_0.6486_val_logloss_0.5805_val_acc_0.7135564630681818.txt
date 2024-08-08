@@ -1,3 +1,0 @@
-Validation Accuracy: 0.7135564630681818
-Validation AUC: 0.6486
-Validation LogLoss: 0.5805

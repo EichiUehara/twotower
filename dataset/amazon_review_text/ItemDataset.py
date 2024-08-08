@@ -14,8 +14,15 @@ class ItemDataset(ItemDataset):
                     'num_classes': self.num_classes['main_category'], 
                     'embedding_dim': embedding_dim(self.num_classes['main_category'])
                 },
+                'store': {
+                    'num_classes': self.num_classes['store'], 
+                    'embedding_dim': embedding_dim(self.num_classes['store'])
+                }
             },
             'text_features': {
+                'details': {
+                    'max_length': 512
+                }
             },
             'history_features': {
             },

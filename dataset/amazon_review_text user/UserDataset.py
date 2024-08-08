@@ -12,17 +12,19 @@ class UserDataset(UserDataset):
             'categorical_features': {
             },
             'text_features': {
-                'review_text_history': {'max_length': 100}
             },
             'history_features': {
                 'purchased_item_ids': {
-                    'max_history_length': 10, 
                     'num_classes': self.num_classes['item_id'], 
-                    'embedding_dim': embedding_dim(self.num_classes['item_id'])
+                    'embedding_dim': embedding_dim(self.num_classes['item_id']),
+                    'max_history_length': 10
                 }
             },
             'text_history_features': {
-                'review_text_history': {'max_history_length': 10, 'max_length': 100}
+                'review_text_history': {
+                    'max_history_length': 10,
+                    'max_length': 512
+                }
             }
         }
 

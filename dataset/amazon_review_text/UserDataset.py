@@ -15,8 +15,17 @@ class UserDataset(UserDataset):
             'text_features': {
             },
             'history_features': {
+                'purchased_item_ids': {
+                    'num_classes': self.num_classes['item_id'], 
+                    'embedding_dim': embedding_dim(self.num_classes['item_id']),
+                    'max_history_length': 10
+                }
             },
             'text_history_features': {
+                'review_text_history': {
+                    'max_history_length': 10,
+                    'max_length': 512
+                }
             }
         }
 if __name__ == '__main__':

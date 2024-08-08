@@ -51,8 +51,8 @@ class TwoTowerBinaryModel(nn.Module):
             return [list(set(indices[i])) for i in range(len(indices))]
     
     def fit(self, optimizer, data_loader, val_data_loader=None, epochs=5):
-        self.to(self.device)
         self.train()
+        self.to(self.device)
         print(f"Training on {self.device}")
         for epoch in range(epochs):
             start = time.time()

@@ -53,7 +53,6 @@ class FeatureEmbeddingLayer(nn.Module):
             )
 
     def forward(self, ids)->torch.Tensor:
-        print()
         ids = ids.to(self.device)
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)

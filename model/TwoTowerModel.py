@@ -53,7 +53,6 @@ class TwoTowerBinaryModel(nn.Module):
     def fit(self, optimizer, data_loader, val_data_loader=None, epochs=5):
         self.train()
         self.to(self.device)
-        print("Hello World")
         print(f"Training on {self.device}")
         for epoch in range(epochs):
             start = time.time()
@@ -61,9 +60,9 @@ class TwoTowerBinaryModel(nn.Module):
             running_loss = 0.0
             running_accuracy = 0.0
             for batch in data_loader:
-                user_features = batch['user_id']
-                item_features = batch['item_id']
-                labels = batch['rating']
+                user_features = batch['user_id'].to(self.device)
+                item_features = batch['item_id'].to(self.device)
+                labels = batch['rating'].to(self.device)
                 loss, accuracy = self.train_step(optimizer, user_features, item_features, labels)
                 i += 1
                 running_loss += loss

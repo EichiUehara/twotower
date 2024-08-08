@@ -10,8 +10,8 @@ class ItemDataset(ItemDataset):
         self.text_history_features = []
         self.hyperparameters = {
             'id': {
-                'num_classes': self.num_classes['item_id'], 
-                'embedding_dim': embedding_dim(self.num_classes['item_id'])
+                'num_classes': self.num_classes['id'], 
+                'embedding_dim': embedding_dim(self.num_classes['id'])
             },
             'categorical_features': {
                 'main_category': {
@@ -28,6 +28,8 @@ class ItemDataset(ItemDataset):
             'history_features': {
             },
             'text_history_features': {
+            },
+            'feedforward_network': {
             }
         }
         input_dim = 0
@@ -42,11 +44,7 @@ class ItemDataset(ItemDataset):
             input_dim += 768
         for feature in self.text_history_features:
             input_dim += 768
-        self.feedforward_network = {
-                'input_dim': input_dim,
-                'hidden_dim': 512,
-                'output_dim': 256
-            }
+        self.hyperparameters['feedforward_network']['input_dim'] = input_dim
 if __name__ == '__main__':
     item_dataset = ItemDataset('All_Beauty')
     print(len(item_dataset))

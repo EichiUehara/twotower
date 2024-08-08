@@ -1,14 +1,18 @@
 from dataset.movie_lens_base.ItemDataset import ItemDataset as ItemDatasetBase
 from module.DimCalculator import embedding_dim
 class ItemDataset(ItemDatasetBase):
-    def __init__(self, category):
-        super().__init__(category)
+    def __init__(self):
+        super().__init__()
         self.numerical_features = ['average_rating']
         self.categorical_features = ['genres', 'year']
         self.text_features = []
         self.history_features = []
         self.text_history_features = []
         self.hyperparameters = {
+            'id': {
+                'num_classes': self.num_classes['id'], 
+                'embedding_dim': embedding_dim(self.num_classes['id'])
+            },
             'categorical_features': {
                 'genres': {
                     'num_classes': self.num_classes['genres'], 
@@ -24,6 +28,8 @@ class ItemDataset(ItemDatasetBase):
             'history_features': {
             },
             'text_history_features': {
+            },
+            'feedforward_network': {
             }
         }
         input_dim = 0
@@ -38,11 +44,7 @@ class ItemDataset(ItemDatasetBase):
             input_dim += 768
         for feature in self.text_history_features:
             input_dim += 768
-        self.feedforward_network = {
-                'input_dim': input_dim,
-                'hidden_dim': 512,
-                'output_dim': 256
-            }        
+        self.hyperparameters['feedforward_network']['input_dim'] = input_dim        
 
 if __name__ == '__main__':
     item_dataset = ItemDataset()

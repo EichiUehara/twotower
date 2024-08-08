@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from torch import nn
 import torch
 
@@ -13,18 +9,18 @@ from module.EmbedText import EmbedText
 from module.EmbedTextHistory import EmbedTextHistory
 
 class FeatureEmbeddingLayer(nn.Module):
-    def __init__(self, dataset):
+    def __init__(self, embedding_dim, dataset):
         super(FeatureEmbeddingLayer, self).__init__()
-        self.id_embedding = nn.Embedding(
-            self.dataset.hyperparameters['id_embedding']['num_classes'],
-            self.dataset.hyperparameters['id_embedding']['embedding_dim']
-        )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.dataset = dataset
+        self.id_embedding = nn.Embedding(
+            self.dataset.hyperparameters['id']['num_classes'],
+            self.dataset.hyperparameters['id']['embedding_dim']
+        )
         self.output = FeedForwardNetwork(
-            dataset.feedforward_network['input_dim'],
-            dataset.feedforward_network['hidden_dim'],
-            dataset.feedforward_network['output_dim']
+            dataset.hyperparameters['feedforward_network']['input_dim'],
+            embedding_dim * 2,
+            embedding_dim
         )
         self.embed_categorical = {}
         self.embed_history = {}
@@ -55,7 +51,7 @@ class FeatureEmbeddingLayer(nn.Module):
             self.embed_text_history[feature] = EmbedTextHistory(
                 dataset.hyperparameters['text_history_features'][feature]['model_name']
             )
-        self.id_embedding = nn.Embedding(len(dataset), 200)
+        # self.id_embedding = nn.Embedding(len(dataset), 200)
         # self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
         # self.embed_categorical = EmbedCategory(200000, 50)
         # self.embed_history = EmbedHistory(
@@ -72,9 +68,7 @@ class FeatureEmbeddingLayer(nn.Module):
         batch = self.dataset.collate_fn(batch)
         embedded_features = []
         embedded_features.append(self.id_embedding(batch['id'].to(self.device)))
-        for feature in self.dataset.numerical_features:
-            embedded_features.append(
-                self.embed_numerical(batch['numerical_features'][feature].to(self.device)))
+        embedded_features.append(self.embed_numerical(batch['numerical_features'].to(self.device)))
         for feature in self.dataset.categorical_features:
             embedded_features.append(
                 self.embed_categorical[feature](batch['categorical_features'][feature].to(self.device)))

@@ -9,7 +9,7 @@ from module.Tokenizer import Tokenizer
 
 class ItemDataset(Dataset):
     def __init__(self):
-        review_df = pd.read_csv("dataset/movie_lens/movielens.zip")
+        review_df = pd.read_csv("dataset/movie_lens_base/movielens.zip")
         def most_frequent(series):
             return series.mode()[0] if not series.mode().empty else None
             
@@ -33,17 +33,16 @@ class ItemDataset(Dataset):
         self.text_features = ['title']
         self.history_features = []
         self.text_history_features = []
-        self.input_dim = 200 + \
-                         len(self.numerical_features) + \
-                         len(self.categorical_features) * 50 + \
-                         len(self.text_features)* 768 + \
-                         len(self.history_features)* 50 + \
-                         len(self.text_history_features)* 768
         self.tokenizer = Tokenizer()
         self.max_history_length = 10
         self.dataframe = movie_df
         self.index_to_id = {i: id for i, id in enumerate(self.dataframe.index)}
         self.id_to_index = {id: i for i, id in enumerate(self.dataframe.index)}
+        self.num_classes = {
+            "id": len(self.dataframe),
+            "genres": len(genres_encoded),
+            "year": len(year_encoded),
+        }
 
     def __len__(self):
         return len(self.dataframe)

@@ -7,7 +7,7 @@ from module.Tokenizer import Tokenizer
 
 class UserDataset(Dataset):
     def __init__(self):
-        review_df = pd.read_csv("dataset/movie_lens/movielens.zip")
+        review_df = pd.read_csv("dataset/movie_lens_base/movielens.zip")
         def most_frequent(series):
             return series.mode()[0] if not series.mode().empty else None
         user_df = review_df.groupby('user_id').agg({ 
@@ -29,17 +29,17 @@ class UserDataset(Dataset):
         self.text_features = []
         self.history_features = []
         self.text_history_features = []
-        self.input_dim = 200 + \
-                         len(self.numerical_features) + \
-                         len(self.categorical_features) * 50 + \
-                         len(self.text_features)* 768 + \
-                         len(self.history_features)* 50 + \
-                         len(self.text_history_features)* 768
         self.tokenizer = Tokenizer()
         self.max_history_length = 10
         self.dataframe = processed_user_df
         self.index_to_id = {i: id for i, id in enumerate(self.dataframe.index)}
         self.id_to_index = {id: i for i, id in enumerate(self.dataframe.index)}
+        self.num_classes = {
+            "id": len(self.dataframe),
+            "gender": len(gender_encoded),
+            "zipcode": len(zipcode_encoded),
+            "occupation": len(user_df['occupation'].unique())
+        }
 
     def __len__(self):
         return len(self.dataframe)

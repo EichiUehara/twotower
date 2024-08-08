@@ -9,6 +9,10 @@ class UserDataset(UserDataset):
         self.history_features = ['purchased_item_ids']
         self.text_history_features = ['review_text_history']
         self.hyperparameters = {
+            'id': {
+                'num_classes': self.num_classes['id'], 
+                'embedding_dim': embedding_dim(self.num_classes['id'])
+            },
             'categorical_features': {
             },
             'text_features': {
@@ -39,11 +43,7 @@ class UserDataset(UserDataset):
             input_dim += 768
         for feature in self.text_history_features:
             input_dim += 768
-        self.feedforward_network = {
-                'input_dim': input_dim,
-                'hidden_dim': 512,
-                'output_dim': 256
-            }
+        self.hyperparameters['feedforward_network']['input_dim'] = input_dim
 if __name__ == '__main__':
     user_dataset = UserDataset('All_Beauty')
     print(len(user_dataset))

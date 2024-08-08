@@ -2,9 +2,9 @@ import torch
 from model.TwoTowerModel import TwoTowerBinaryModel
 
 if __name__ == '__main__':
-    from dataset.movie_lens.UserDataset import UserDataset
-    from dataset.movie_lens.ItemDataset import ItemDataset
-    from dataset.movie_lens.ReviewDataset import ReviewDataset
+    from dataset.movie_lens_ids.UserDataset import UserDataset
+    from dataset.movie_lens_ids.ItemDataset import ItemDataset
+    from dataset.movie_lens_ids.ReviewDataset import ReviewDataset
     review_dataset = ReviewDataset()
     user_dataset = UserDataset()
     item_dataset = ItemDataset()

@@ -53,6 +53,7 @@ class FeatureEmbeddingLayer(nn.Module):
             )
 
     def forward(self, ids)->torch.Tensor:
+        print()
         ids = ids.to(self.device)
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
@@ -65,11 +66,15 @@ class FeatureEmbeddingLayer(nn.Module):
             'text_history_features': {k: {k2: v2.to(self.device) for k2, v2 in v.items()} for k, v in batch['text_history_features'].items()}
         }
 
+        print(f"ids device: {ids.device}")
+        print(f"Batch 'id' device: {batch['id'].device}")
+        print(f"Batch 'numerical_features' device: {batch['numerical_features'].device}")
         embedded_features = []
         embedded_features.append(self.id_embedding(batch['id']))
         embedded_features.append(self.embed_numerical(batch['numerical_features']))
         
         for feature in self.dataset.categorical_features:
+            print(f"Batch 'categorical_features[{feature}]' device: {batch['categorical_features'][feature].device}")
             embedded_features.append(self.embed_categorical[feature](batch['categorical_features'][feature]))
             
         for feature in self.dataset.history_features:
@@ -80,3 +85,5 @@ class FeatureEmbeddingLayer(nn.Module):
             
         for feature in self.dataset.text_history_features:
             embedded_features.append(self.embed_text_history[feature](batch['text_history_features'][feature]))
+        concatenated = torch.cat(embedded_features, dim=1)
+        return self.output(concatenated)

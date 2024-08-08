@@ -13,21 +13,58 @@ from module.EmbedText import EmbedText
 from module.EmbedTextHistory import EmbedTextHistory
 
 class FeatureEmbeddingLayer(nn.Module):
-    def __init__(self, embedding_dim, dataset):
+    def __init__(self, dataset):
         super(FeatureEmbeddingLayer, self).__init__()
-        self.id_embedding = nn.Embedding(len(dataset), 200)
-        self.embed_categorical = EmbedCategory(200000, 50)
-        self.embed_history = EmbedHistory(
-            nn.Embedding(200000, 50),
-            nn.TransformerEncoderLayer(d_model=50, nhead=2))
-        self.embed_numerical = NormNumeric(len(dataset.numerical_features))
-        self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
-        self.embed_text_history = EmbedTextHistory(
-            "BAAI/bge-base-en-v1.5"
+        self.id_embedding = nn.Embedding(
+            self.dataset.hyperparameters['id_embedding']['num_classes'],
+            self.dataset.hyperparameters['id_embedding']['embedding_dim']
         )
-        self.dataset = dataset
-        self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.dataset = dataset
+        self.output = FeedForwardNetwork(
+            dataset.hyperparameters['feedforward_network']['input_dim'],
+            dataset.hyperparameters['feedforward_network']['hidden_dim'],
+            dataset.hyperparameters['feedforward_network']['output_dim']
+        )
+        self.embed_categorical = {}
+        self.embed_history = {}
+        self.embed_text = {}
+        self.embed_text_history = {}
+        self.embed_numerical = NormNumeric(len(dataset.numerical_features))
+        for feature in dataset.categorical_features:
+            self.embed_categorical[feature] = EmbedCategory(
+                dataset.hyperparameters['categorical_features'][feature]['num_classes'],
+                dataset.hyperparameters['categorical_features'][feature]['embedding_dim']
+            )
+        for feature in dataset.history_features:
+            self.embed_history[feature] = EmbedHistory(
+                nn.Embedding(
+                    dataset.hyperparameters['history_features'][feature]['num_classes'],
+                    dataset.hyperparameters['history_features'][feature]['embedding_dim']
+                ),
+                nn.TransformerEncoderLayer(
+                    dataset.hyperparameters['history_features'][feature]['embedding_dim'], 
+                    dataset.hyperparameters['history_features'][feature]['transformer_head']
+                )
+            )
+        for feature in dataset.text_features:
+            self.embed_text[feature] = EmbedText(
+                dataset.hyperparameters['text_features'][feature]['model_name']
+            )
+        for feature in dataset.text_history_features:
+            self.embed_text_history[feature] = EmbedTextHistory(
+                dataset.hyperparameters['text_history_features'][feature]['model_name']
+            )
+        self.id_embedding = nn.Embedding(len(dataset), 200)
+        # self.output = FeedForwardNetwork(dataset.input_dim, 128, embedding_dim)
+        # self.embed_categorical = EmbedCategory(200000, 50)
+        # self.embed_history = EmbedHistory(
+        #     nn.Embedding(200000, 50),
+        #     nn.TransformerEncoderLayer(d_model=50, nhead=2))
+        # self.embed_text = EmbedText("BAAI/bge-base-en-v1.5")
+        # self.embed_text_history = EmbedTextHistory(
+        #     "BAAI/bge-base-en-v1.5"
+        # )
         # self.output = nn.Linear(dataset.input_dim, embedding_dim)
 
     def forward(self, ids)->torch.Tensor:
@@ -35,25 +72,21 @@ class FeatureEmbeddingLayer(nn.Module):
         batch = self.dataset.collate_fn(batch)
         embedded_features = []
         embedded_features.append(self.id_embedding(batch['id'].to(self.device)))
-        if len(batch['numerical_features']) > 0:
+        for feature in self.dataset.numerical_features:
             embedded_features.append(
-                self.embed_numerical(batch['numerical_features'].to(self.device)))
-        if len(batch['categorical_features']) > 0:
-            for feature in batch['categorical_features']:
-                embedded_features.append(
-                    self.embed_categorical(batch['categorical_features'][feature].to(self.device)))
-        if len(batch['history_features']) > 0:
-            for feature in batch['history_features']:
-                embedded_features.append(
-                    self.embed_history(batch['history_features'][feature].to(self.device)))
-        if len(batch['text_features']) > 0:
-            for feature in batch['text_features']:
-                embedded_features.append(
-                    self.embed_text(batch['text_features'][feature].to(self.device)))
-        if len(batch['text_history_features']) > 0:
-            for feature in batch['text_history_features']:
-                embedded_features.append(
-                    self.embed_text_history(batch['text_history_features'][feature].to(self.device)))
+                self.embed_numerical(batch['numerical_features'][feature].to(self.device)))
+        for feature in self.dataset.categorical_features:
+            embedded_features.append(
+                self.embed_categorical[feature](batch['categorical_features'][feature].to(self.device)))
+        for feature in self.dataset.history_features:
+            embedded_features.append(
+                self.embed_history[feature](batch['history_features'][feature].to(self.device)))
+        for feature in self.dataset.text_features:
+            embedded_features.append(
+                self.embed_text[feature](batch['text_features'][feature].to(self.device)))
+        for feature in self.dataset.text_history_features:
+            embedded_features.append(
+                self.embed_text_history[feature](batch['text_history_features'][feature].to(self.device)))
         concatenated = torch.cat(embedded_features, dim=1)
         return self.output(concatenated)
     

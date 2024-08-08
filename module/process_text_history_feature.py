@@ -7,10 +7,11 @@ def process_text_history_feature(
     padding='max_length', truncation=True, max_length=512, return_tensors='pt'
     ):
     new_text_history_feature = []
+    print(text_history_feature)
     for texts in text_history_feature:
-        print(texts)
+        if texts is None:
+            pass
         texts = texts[-max_history_length:]
-        print(texts)
         texts = "|".join(texts)
         new_text_history_feature.append(texts)
     return tokenizer.tokenize(

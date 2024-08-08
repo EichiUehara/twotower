@@ -11,8 +11,8 @@ if __name__ == '__main__':
     user_dataset = UserDataset(amazon_category)
     item_dataset = ItemDataset(amazon_category)
     model = TwoTowerBinaryModel(64, 10, user_dataset, item_dataset)
-    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 4096, 0.8, num_workers=8)
-    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=32)
+    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 4096, 0.8, num_workers=12)
+    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=8)
     # save the model
     torch.save(model.state_dict(), 'amazon_review_ids_medium.pth')
     # load the model

@@ -7,3 +7,4 @@ miniconda.sh
 *.log
 *.pth
 runs/
+*%.txt

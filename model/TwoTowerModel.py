@@ -1,10 +1,10 @@
 import time
-from sklearn.metrics import accuracy_score
+import numpy as np
+from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 from torch.nn import functional as F
 import torch
 from torch import nn
 from torch.cuda.amp import GradScaler, autocast
-# from torch.utils.tensorboard import SummaryWriter
 scaler = GradScaler()
 
 from dataloader.get_data_loaders import get_data_loaders
@@ -20,7 +20,6 @@ class TwoTowerBinaryModel(nn.Module):
         self.item_features_embedding = FeatureEmbeddingLayer(embedding_dim, ItemDataset, model_name=model_name).to(self.device)
         self.FaissIndex = FaissIndex(embedding_dim, num_faiss_clusters)
         self.get_data_loaders = get_data_loaders
-        # self.writer = SummaryWriter(log_dir=f"./runs/{UserDataset.__class__.__name__}_vs_{ItemDataset.__class__.__name__}_embedding_dim_{embedding_dim}".replace(' ', ''))
 
     def forward(self, user_ids, item_ids):
         user_emb = self.user_features_embedding(user_ids)
@@ -70,12 +69,13 @@ class TwoTowerBinaryModel(nn.Module):
                 if i % 100 == 0:
                     print(f"Loss: {running_loss / i:.4f}, Accuracy: {running_accuracy / i * 100:.2f}%")
                     print(f"Time: {time.time() - start}")
-                    start = time.time()
                     print(f"Batches: {i}")
-                    # self.writer.add_scalar('Loss', running_loss / i, epoch)
+                    start = time.time()
+            print(f"Loss: {running_loss / i:.4f}, Accuracy: {running_accuracy / i * 100:.2f}%")
+            print(f"Time: {time.time() - start}")
+            print(f"Batches: {i}")
             if val_data_loader:
                 self.evaluate(val_data_loader)
-
     def train_step(self, optimizer, user_features, item_features, labels):
         labels = labels.float().to(self.device)
         optimizer.zero_grad()
@@ -88,14 +88,13 @@ class TwoTowerBinaryModel(nn.Module):
         probabilities = torch.sigmoid(logits)
         predictions = probabilities > 0.5
         accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
-        # print(f"Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%")
         return loss.item(), accuracy
     
     def evaluate(self, val_dataloader):
         self.eval()
-        val_running_loss = 0.0
         val_running_accuracy = 0.0
-        i = 0
+        all_labels = []
+        all_preds = []
         with torch.no_grad():
             for batch in val_dataloader:
                 user_features = batch['user_id']
@@ -105,12 +104,16 @@ class TwoTowerBinaryModel(nn.Module):
                 probabilities = torch.sigmoid(logits)
                 predictions = probabilities > 0.5
                 accuracy = accuracy_score(labels.cpu().numpy(), predictions.cpu().numpy())
-                val_running_loss += F.binary_cross_entropy_with_logits(logits, labels.float().to(self.device)).item()
                 val_running_accuracy += accuracy
-                i += 1
-        print(f"Validation Loss: {val_running_loss / i:.4f}, Validation Accuracy: {val_running_accuracy / i * 100:.2f}%")
-        # self.writer.add_scalar('Validation Loss', val_running_loss / i, i)
-        # self.writer.add_scalar('Validation Accuracy', val_running_accuracy / i * 100, i)
+                all_preds.extend(probabilities.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+        print(f"Validation Accuracy: {val_running_accuracy / len(val_dataloader)}")
+        print(f"Validation AUC: {roc_auc_score(all_labels, all_preds):.4f}")
+        print(f"Validation LogLoss: {log_loss(all_labels, all_preds):.4f}")
+        with open(f'val_auc_{roc_auc_score(all_labels, all_preds):.4f}_val_logloss_{log_loss(all_labels, all_preds):.4f}_val_acc_{val_running_accuracy / len(val_dataloader)}.txt', 'w') as f:
+            f.write(f'Validation Accuracy: {val_running_accuracy / len(val_dataloader)}\n')
+            f.write(f'Validation AUC: {roc_auc_score(all_labels, all_preds):.4f}\n')
+            f.write(f'Validation LogLoss: {log_loss(all_labels, all_preds):.4f}\n')
                 
 
     def inference(self, user_features, topk):

@@ -9,4 +9,4 @@ miniconda.sh
 runs/
 *%.txt
 *%.txt
-score/
+score/**.txt

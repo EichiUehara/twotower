@@ -6,3 +6,4 @@ miniconda.sh
 *.zip
 *.log
 *.pth
+runs/

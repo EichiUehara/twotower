@@ -11,7 +11,7 @@ if __name__ == '__main__':
     review_dataset = ReviewDataset(amazon_category)
     user_dataset = UserDataset(amazon_category)
     item_dataset = ItemDataset(amazon_category)
-    model = TwoTowerBinaryModel(64, 10, user_dataset, item_dataset)
+    model = TwoTowerBinaryModel(512, 10, user_dataset, item_dataset)
     train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 512, 0.8, num_workers=8)
     model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader)
     # save the model

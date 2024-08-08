@@ -17,12 +17,14 @@ class FaissIndex:
 
     def create_main_index(self):
         quantizer = faiss.IndexFlatIP(self.embedding_dim)
-        self.index_ivf_sq = faiss.IndexIVFFlat(quantizer, self.embedding_dim, self.num_clusters, faiss.METRIC_INNER_PRODUCT)
+        self.index_ivf_sq = faiss.IndexFlatL2(self.embedding_dim)
+        # self.index_ivf_sq = faiss.IndexIVFFlat(quantizer, self.embedding_dim, self.num_clusters, faiss.METRIC_INNER_PRODUCT)
         self.index_ivf_sq = faiss.IndexIDMap(self.index_ivf_sq)
 
     def create_aux_index(self):
-        quantizer = faiss.IndexFlatIP(self.embedding_dim)
-        self.aux_index = faiss.IndexIVFFlat(quantizer, self.embedding_dim, 1, faiss.METRIC_INNER_PRODUCT)
+        # quantizer = faiss.IndexFlatIP(self.embedding_dim)
+        self.aux_index = faiss.IndexFlatL2(self.embedding_dim)
+        # self.aux_index = faiss.IndexIVFFlat(quantizer, self.embedding_dim, 1, faiss.METRIC_INNER_PRODUCT)
         self.aux_index = faiss.IndexIDMap(self.aux_index)
 
     def train(self, embeddings, ids):
@@ -88,14 +90,14 @@ class FaissIndex:
             return D_main, I_main
 
 if __name__ == '__main__':
-    embedding_dim = 64
-    num_clusters = 25
+    embedding_dim = 768
+    num_clusters = 100
     retrain_threshold = 1000
     index = FaissIndex(embedding_dim, num_clusters, retrain_threshold)
 
     # Initial training
     embeddings = np.random.rand(1000000, embedding_dim).astype(np.float32)
-    index.train(embeddings)
+    index.train(embeddings, np.arange(1000000))
 
     # Adding new embeddings
     new_embeddings = np.random.rand(100, embedding_dim).astype(np.float32)
@@ -105,7 +107,7 @@ if __name__ == '__main__':
 
     # Perform search
     query = np.random.rand(1, embedding_dim).astype(np.float32)
-    k = 5
+    k = 100
     distance, indices = index.search(query, k)
     print(distance)
-    print(indices)
+    print([list(set(indices[i])) for i in range(len(indices))])

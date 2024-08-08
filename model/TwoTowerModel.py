@@ -28,10 +28,18 @@ class TwoTowerBinaryModel(nn.Module):
         interaction_score = torch.sum(user_emb * item_emb, dim=1)
         return interaction_score
 
-    def index_train(self, item_ids):
+    def index_train(self, data_loader):
+        item_ids = []
+        item_embs = []
         with torch.no_grad():
-            item_emb = self.item_features_embedding(item_ids)
-            self.FaissIndex.train(item_emb)
+            for batch in data_loader:
+                item_features = batch['item_id']
+                item_emb = self.item_features_embedding(item_features)
+                item_ids.append(item_features)
+                item_embs.append(item_emb)
+        item_ids = torch.cat(item_ids)
+        item_embs = torch.cat(item_embs)
+        self.FaissIndex.train(item_embs.cpu().numpy(), item_ids.cpu().numpy())
     
     def index_add(self, embedding, item_ids):
         self.FaissIndex.add(embedding, item_ids)
@@ -40,13 +48,13 @@ class TwoTowerBinaryModel(nn.Module):
         with torch.no_grad():
             user_emb = self.user_features_embedding(user_ids)
             _ , indices = self.FaissIndex.search(user_emb, topk)
-            return indices
+            return [list(set(indices[i])) for i in range(len(indices))]
     
     def fit(self, optimizer, data_loader, val_data_loader=None, epochs=5):
+        self.to(self.device)
+        self.train()
+        print(f"Training on {self.device}")
         for epoch in range(epochs):
-            print(f"Training on {self.device}")
-            self.to(self.device)
-            self.train()
             start = time.time()
             i = 0
             running_loss = 0.0

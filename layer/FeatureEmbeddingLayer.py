@@ -56,20 +56,20 @@ class FeatureEmbeddingLayer(nn.Module):
         ids = ids.to(self.device)
         batch = [self.dataset[id] for id in ids]
         batch = self.dataset.collate_fn(batch)
+        batch = {key: value.to(self.device) for key, value in batch.items()}
+
         embedded_features = []
-        embedded_features.append(self.id_embedding(batch['id'].to(self.device)))
-        embedded_features.append(self.embed_numerical(batch['numerical_features'].to(self.device)))
+        embedded_features.append(self.id_embedding(batch['id']))
+        embedded_features.append(self.embed_numerical(batch['numerical_features']))
+        
         for feature in self.dataset.categorical_features:
-            embedded_features.append(
-                self.embed_categorical[feature](batch['categorical_features'][feature].to(self.device)))
+            embedded_features.append(self.embed_categorical[feature](batch['categorical_features'][feature]))
+            
         for feature in self.dataset.history_features:
-            embedded_features.append(
-                self.embed_history[feature](batch['history_features'][feature].to(self.device)))
+            embedded_features.append(self.embed_history[feature](batch['history_features'][feature]))
+            
         for feature in self.dataset.text_features:
-            embedded_features.append(
-                self.embed_text[feature](batch['text_features'][feature].to(self.device)))
+            embedded_features.append(self.embed_text[feature](batch['text_features'][feature]))
+            
         for feature in self.dataset.text_history_features:
-            embedded_features.append(
-                self.embed_text_history[feature](batch['text_history_features'][feature].to(self.device)))
-        concatenated = torch.cat(embedded_features, dim=1)
-        return self.output(concatenated)
+            embedded_features.append(self.embed_text_history[feature](batch['text_history_features'][feature]))

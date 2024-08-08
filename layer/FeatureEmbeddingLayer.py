@@ -78,12 +78,15 @@ class FeatureEmbeddingLayer(nn.Module):
             embedded_features.append(self.embed_categorical[feature](batch['categorical_features'][feature]))
             
         for feature in self.dataset.history_features:
+            print(f"Batch 'history_features[{feature}]' device: {batch['history_features'][feature].device}")
             embedded_features.append(self.embed_history[feature](batch['history_features'][feature]))
             
         for feature in self.dataset.text_features:
+            print(f"Batch 'text_features[{feature}]' device: {batch['text_features'][feature].device}")
             embedded_features.append(self.embed_text[feature](batch['text_features'][feature]))
             
         for feature in self.dataset.text_history_features:
+            print(f"Batch 'text_history_features[{feature}]' device: {batch['text_history_features'][feature].device}")
             embedded_features.append(self.embed_text_history[feature](batch['text_history_features'][feature]))
         concatenated = torch.cat(embedded_features, dim=1)
         return self.output(concatenated)

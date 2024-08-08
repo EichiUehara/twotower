@@ -6,14 +6,14 @@ def process_text_history_feature(
     text_history_feature, max_history_length, tokenizer: Tokenizer, 
     padding='max_length', truncation=True, max_length=512, return_tensors='pt'
     ):
-    new_text_history_feature = []
-    print(text_history_feature)
-    for texts in text_history_feature:
-        if texts is None:
-            pass
-        texts = texts[-max_history_length:]
-        texts = "|".join(texts)
-        new_text_history_feature.append(texts)
+    print(text_history_feature[:max_history_length])
+    new_text_history_feature = "|".join(text_history_feature)
+    print(new_text_history_feature)
+    # for texts in text_history_feature:
+    #     if texts is None:
+    #         pass
+    #     texts = texts[-max_history_length:]
+    #     new_text_history_feature.append(texts)
     return tokenizer.tokenize(
         new_text_history_feature,
         padding=padding, 

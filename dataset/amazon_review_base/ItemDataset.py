@@ -10,14 +10,11 @@ from sklearn.preprocessing import LabelEncoder
 
 class ItemDataset(Dataset):
     def __init__(self, amazon_category):
-        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip'):
-            item_df = pd.read_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip')
+        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet'):
+            item_df = pd.read_parquet(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet')
         else:
             item_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
-            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False, escapechar='\\')
-            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-                z.write(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
-            os.remove(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
+            item_df.to_parquet(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet', index=False)
         item_df = item_df[['parent_asin', 'main_category', 'average_rating', 'rating_number', 'store', 'details']]
         item_df = item_df.drop_duplicates(subset='parent_asin')
         item_df = item_df.reset_index(drop=True)

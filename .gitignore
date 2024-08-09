@@ -6,6 +6,7 @@ miniconda.sh
 *.zip
 *.log
 *.pth
+*.parquet
 runs/
 *%.txt
 *%.txt

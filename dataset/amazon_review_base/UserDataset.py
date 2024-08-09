@@ -11,14 +11,11 @@ from module.Tokenizer import Tokenizer
 
 class UserDataset(Dataset):
     def __init__(self, amazon_category):
-        if os.path.exists(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip'):
-            review_df = pd.read_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip')
+        if os.path.exists(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet'):
+            review_df = pd.read_parquet(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet')
         else:
             review_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
-            review_df.to_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv', index=False, escapechar='\\')
-            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-                z.write(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
-            os.remove(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
+            review_df.to_parquet(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet', index=False)
         review_df = review_df[['timestamp', 'user_id', 'verified_purchase', 'rating', 'parent_asin', 'text']]
         review_df = review_df.sort_values(by=['user_id', 'timestamp'], ascending=[True, False])
         user_df = review_df.groupby('user_id').agg({

@@ -7,22 +7,16 @@ from datasets import load_dataset
 
 class ReviewDataset(Dataset):
     def __init__(self, amazon_category):
-        if os.path.exists(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip'):
-            review_df = pd.read_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip')
+        if os.path.exists(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet'):
+            review_df = pd.read_parquet(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet')
         else:
             review_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_review_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
-            review_df.to_csv(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv', index=False, escapechar='\\')
-            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-                z.write(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
-            os.remove(f'dataset/amazon_review_base/raw_review_{amazon_category}.csv')
-        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip'):
-            item_df = pd.read_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip')
+            review_df.to_parquet(f'dataset/amazon_review_base/raw_review_{amazon_category}.parquet', index=False)
+        if os.path.exists(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet'):
+            item_df = pd.read_parquet(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet')
         else:
             item_df = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{amazon_category}", split="full", trust_remote_code=True).to_pandas()
-            item_df.to_csv(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv', index=False, escapechar='\\')
-            with zipfile.ZipFile(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-                z.write(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
-            os.remove(f'dataset/amazon_review_base/raw_meta_{amazon_category}.csv')
+            item_df.to_parquet(f'dataset/amazon_review_base/raw_meta_{amazon_category}.parquet', index=False)
         review_df = review_df[['user_id', 'parent_asin', 'rating']]
         review_df = review_df.drop_duplicates(subset=['user_id', 'parent_asin'], keep='first')
         review_df['rating'] = review_df['rating'].apply(lambda x: 1 if x >= 4 else 0)

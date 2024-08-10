@@ -1,5 +1,6 @@
 import math
 from dataset.amazon_review_base.UserDataset import UserDataset
+from module import transformer_head
 from module.embedding_dim import embedding_dim
 class UserDataset(UserDataset):
     def __init__(self, category):
@@ -22,7 +23,7 @@ class UserDataset(UserDataset):
                 'purchased_item_ids': {
                     'num_classes': self.num_classes['item_id'], 
                     'embedding_dim': embedding_dim(self.num_classes['item_id']),
-                    'transformer_head': math.ceil(math.sqrt(math.sqrt(embedding_dim(self.num_classes['item_id'])))),
+                    'transformer_head': transformer_head(self.num_classes['item_id'])
                 }
             },
             'text_history_features': {

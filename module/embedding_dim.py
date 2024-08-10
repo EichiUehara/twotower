@@ -1,15 +1,16 @@
 import math
 def embedding_dim(target):
-    sum_log = 1
-    quad_root = int(math.sqrt(math.sqrt(target) + 25) +25 ) +25
-    for i in range(2, quad_root + 25):
-        sum_log += math.log(quad_root, i)
-    dim = int(min(math.sqrt(target), sum_log))
-    if dim > 50:
-        dim = int(min(math.sqrt(math.sqrt(target) + 100) + 100, dim))
-    if dim > 250:
-        dim = int(min(math.sqrt(math.sqrt(target) + 500) + 500, dim))
-    return dim
+    return math.ceil(math.sqrt(target))
+    # sum_log = 1
+    # quad_root = int(math.sqrt(math.sqrt(target) + 25) +25 ) +25
+    # for i in range(2, quad_root + 25):
+    #     sum_log += math.log(quad_root, i)
+    # dim = int(min(math.sqrt(target), sum_log))
+    # if dim > 50:
+    #     dim = int(min(math.sqrt(math.sqrt(target) + 100) + 100, dim))
+    # if dim > 250:
+    #     dim = int(min(math.sqrt(math.sqrt(target) + 500) + 500, dim))
+    # return dim
 
 
 

@@ -54,6 +54,7 @@ class TwoTowerBinaryModel(nn.Module):
         self.train()
         self.to(self.device)
         print(f"Training on {self.device}")
+        last_auc = 0
         for epoch in range(epochs):
             start = time.time()
             i = 0
@@ -76,7 +77,9 @@ class TwoTowerBinaryModel(nn.Module):
             print(f"Time: {time.time() - start}")
             print(f"Batches: {i}")
             if val_data_loader:
-                self.evaluate(val_data_loader)
+                auc = self.evaluate(val_data_loader)
+            if last_auc > auc:
+                break
     def train_step(self, optimizer, user_features, item_features, labels):
         labels = labels.float().to(self.device)
         optimizer.zero_grad()
@@ -115,6 +118,7 @@ class TwoTowerBinaryModel(nn.Module):
             f.write(f'Validation Accuracy: {val_running_accuracy / len(val_dataloader)}\n')
             f.write(f'Validation AUC: {roc_auc_score(all_labels, all_preds):.4f}\n')
             f.write(f'Validation LogLoss: {log_loss(all_labels, all_preds):.4f}\n')
+        return roc_auc_score(all_labels, all_preds)
                 
 
     def inference(self, user_features, topk):

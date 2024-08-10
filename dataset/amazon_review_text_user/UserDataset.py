@@ -1,6 +1,5 @@
-import math
 from dataset.amazon_review_base.UserDataset import UserDataset
-from module import transformer_head
+from module.transformer_head import transformer_head
 from module.embedding_dim import embedding_dim
 class UserDataset(UserDataset):
     def __init__(self, category):

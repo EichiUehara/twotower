@@ -12,9 +12,11 @@ if __name__ == '__main__':
     review_dataset = ReviewDataset()
     user_dataset = UserDataset()
     item_dataset = ItemDataset()
-    model = TwoTowerBinaryModel(64, int(math.sqrt(len(item_dataset))), user_dataset, item_dataset)
-    train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 2048, 0.8, num_workers=12)
-    model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=32)
+    for i in range(2, 20):
+        i = i ** 2
+        model = TwoTowerBinaryModel(i, int(math.sqrt(len(item_dataset))), user_dataset, item_dataset)
+        train_dataloader, val_dataloader = model.get_data_loaders(review_dataset, 2048, 0.8, num_workers=12)
+        model.fit(torch.optim.Adam(model.parameters(), lr=0.001), train_dataloader, val_dataloader, epochs=32)
     # save the model
     torch.save(model.state_dict(), 'movie_lens.pth')
     # load the model

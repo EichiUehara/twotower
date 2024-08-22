@@ -21,7 +21,7 @@ Main Task Of the Data Loader it to define function applying to the batch for tra
 
 collate_fn is a function which apply some manupuration to batch data from data loader. Typically beneficial for applying tokenization since tokenization in advance take significant amount of time but applying tokenization one by one is inefficient.
 
-Dataset
+## Dataset
 
 Benefit of Dataset is isoration of the data source and data modeling from Machine Learning Model.
 
